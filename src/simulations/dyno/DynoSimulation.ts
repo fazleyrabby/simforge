@@ -4,7 +4,7 @@ import { carColors, palette } from '../../three/palette'
 import { makePlinth } from '../../three/plinth'
 import { BaseSimulation } from '../core/BaseSimulation'
 import { Rng } from '../core/random'
-import type { ParamValue, StatValue } from '../core/Simulation'
+import { STEP, type ParamValue, type StatValue } from '../core/Simulation'
 import { DynoLogic, generateCycle, generateVehicle, type BodyStyle, type DynoParams } from './DynoLogic'
 
 const DECK = 0.4
@@ -141,11 +141,15 @@ export default class DynoSimulation extends BaseSimulation {
     }
   }
 
-  render(): void {
+  render(alpha: number): void {
     const { logic } = this
-    for (const wheel of this.wheels) if (wheel.driven) wheel.group.rotation.z = -this.wheelAngle
-    for (const roller of this.rollers) roller.rotation.z = this.rollerAngle
-    this.fan.rotation.x = this.fanAngle
+    // Extrapolate rotation between fixed steps so spinning parts stay smooth above 60 Hz.
+    const ahead = STEP * alpha
+    const wheelAngle = this.wheelAngle + (logic.wheelSpeed / logic.vehicle.wheelRadius) * ahead
+    const rollerAngle = this.rollerAngle + (logic.rollerSpeed / ROLLER_RADIUS) * ahead
+    for (const wheel of this.wheels) if (wheel.driven) wheel.group.rotation.z = -wheelAngle
+    for (const roller of this.rollers) roller.rotation.z = rollerAngle
+    this.fan.rotation.x = this.fanAngle + (1.5 + (logic.rollerSpeed + logic.params.wind) * 1.4) * ahead
 
     const shake = this.ctx.reducedMotion ? 0 : Math.sin(this.time * 70) * 0.0035 * (0.25 + logic.throttle)
     this.body.position.y = DECK + shake

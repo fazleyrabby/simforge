@@ -75,7 +75,8 @@ describe('OrbitalSystem', () => {
   it('conserves total energy over a long integration', () => {
     const system = new OrbitalSystem(new Rng(11), 4, { gravity: 1, eccentricity: 0.25 })
     const e0 = system.totalEnergy()
-    run(system, 120, 1 / 480)
+    // Stepped the way the simulation steps it: finer whenever two bodies pass close.
+    for (let i = 0; i < 120 * 60; i++) system.advance(1 / 60, 1 / 60)
     const drift = Math.abs((system.totalEnergy() - e0) / e0)
     expect(drift).toBeLessThan(0.02)
   })
@@ -107,5 +108,26 @@ describe('OrbitalSystem', () => {
     }
     expect(snapshot(99)).toEqual(snapshot(99))
     expect(snapshot(99)).not.toEqual(snapshot(100))
+  })
+
+  it('carries a comet through perihelion without gaining energy or hitting the star', () => {
+    const system = new OrbitalSystem(new Rng(21), 4, { gravity: 1, eccentricity: 0.2 })
+    const comet = system.addComet()
+    const star = system.bodies[0]
+    const before = system.totalEnergy()
+    const distance = () => Math.hypot(comet.x - star.x, comet.y - star.y)
+    // Follow the comet in to its first closest approach and a little way back out.
+    let nearest = distance()
+    let outbound = 0
+    for (let i = 0; i < 60 * 120 && outbound < 120; i++) {
+      system.advance(1.5 / 60, 1 / 60)
+      const d = distance()
+      if (d < nearest) nearest = d
+      else if (d > nearest * 1.05) outbound++
+    }
+    expect(outbound).toBe(120)
+    // Launched for a perihelion of at least 1.8; the star's surface is at 1.1.
+    expect(nearest).toBeGreaterThan(1.5)
+    expect(Math.abs((system.totalEnergy() - before) / before)).toBeLessThan(0.02)
   })
 })

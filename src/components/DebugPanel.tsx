@@ -33,6 +33,7 @@ export function DebugPanel({ simulation, slot, seed }: Props) {
     ['Geometries', info.geometries],
     ['Textures', info.textures],
     ['Programs', info.programs],
+    ['Render scale', `${info.pixelRatio.toFixed(2)}×`],
     ['Simulation time', `${slot.simTime.toFixed(1)} s`],
     ['Active entities', simulation.entityCount()],
     ['Seed', seed],

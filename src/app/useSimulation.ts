@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SimulationDefinition } from '../simulations/core/registry'
 import type { ParamValue, Quality, Simulation } from '../simulations/core/Simulation'
-import { getStage, isMobile, prefersReducedMotion, type Slot } from '../three/Stage'
+import { getStage, isLowSpec, prefersReducedMotion, type Slot } from '../three/Stage'
 
 export interface SimulationHandle {
   status: 'loading' | 'ready' | 'error'
@@ -48,7 +48,7 @@ export function useSimulation(
         renderer: stage.renderer,
         quality,
         seed: initial.current.seed,
-        mobile: isMobile(),
+        mobile: isLowSpec(),
         reducedMotion: prefersReducedMotion(),
         element,
       })

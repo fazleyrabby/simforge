@@ -127,7 +127,7 @@ export abstract class BaseSimulation implements Simulation {
 
   /** Marks meshes under an object as shadow casters/receivers (no-op cost in previews). */
   protected enableShadows(root: THREE.Object3D, receive = true): void {
-    if (this.isPreview) return
+    if (this.isPreview || this.ctx.mobile) return
     root.traverse((object) => {
       if (object instanceof THREE.Mesh) {
         object.castShadow = true

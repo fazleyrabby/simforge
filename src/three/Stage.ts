@@ -27,9 +27,12 @@ export interface StageInfo {
   textures: number
   programs: number
   slots: number
+  /** Current render scale; drops below the device ratio under load. */
+  pixelRatio: number
 }
 
 const MAX_DELTA = 0.1
+const MIN_PIXEL_RATIO = 0.6
 const MAX_STEPS_PER_FRAME = 4
 
 /**
@@ -52,6 +55,7 @@ export class Stage {
     textures: 0,
     programs: 0,
     slots: 0,
+    pixelRatio: 1,
   }
   contextLost = false
 
@@ -61,12 +65,21 @@ export class Stage {
   private canvasWidth = 0
   private canvasHeight = 0
   private fpsFrames = 0
+  private maxPixelRatio = 1
+  private pixelRatio = 1
+  /** Consecutive half-second windows that ran slow / ran with headroom. */
+  private slowWindows = 0
+  private fastWindows = 0
   private fpsTime = 0
 
   constructor() {
-    const mobile = isMobile()
-    this.renderer = new THREE.WebGLRenderer({ antialias: !mobile, alpha: true, powerPreference: 'high-performance' })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.5 : 2))
+    const lowSpec = isLowSpec()
+    // Multisampling costs the most on the devices that can least afford it.
+    this.renderer = new THREE.WebGLRenderer({ antialias: !lowSpec, alpha: true, powerPreference: 'high-performance' })
+    this.maxPixelRatio = Math.min(window.devicePixelRatio, lowSpec ? 1.5 : 2)
+    this.pixelRatio = this.maxPixelRatio
+    this.renderer.setPixelRatio(this.pixelRatio)
+    this.info.pixelRatio = this.pixelRatio
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping
     this.renderer.toneMappingExposure = 1.15
@@ -138,6 +151,7 @@ export class Stage {
     if (this.fpsTime >= 0.5) {
       this.info.fps = Math.round(this.fpsFrames / this.fpsTime)
       this.info.frameMs = (this.fpsTime / this.fpsFrames) * 1000
+      this.adaptResolution(this.info.fps)
       this.fpsFrames = 0
       this.fpsTime = 0
     }
@@ -151,6 +165,37 @@ export class Stage {
    */
   advance(seconds: number): void {
     for (let i = 0; i < Math.round(seconds / STEP); i++) this.draw(STEP)
+  }
+
+  /**
+   * Dynamic resolution. When the frame rate sags, render fewer pixels; when
+   * there is headroom again, climb back toward the device's native ratio.
+   * A slow phone settles at a resolution it can hold, and a fast desktop
+   * never leaves full resolution.
+   */
+  private adaptResolution(fps: number): void {
+    // A hidden or throttled tab reports a tiny frame rate; that is not load.
+    if (fps < 8 || document.visibilityState !== 'visible') {
+      this.slowWindows = 0
+      this.fastWindows = 0
+      return
+    }
+    this.slowWindows = fps < 48 ? this.slowWindows + 1 : 0
+    this.fastWindows = fps >= 57 ? this.fastWindows + 1 : 0
+    let next = this.pixelRatio
+    if (this.slowWindows >= 2 && this.pixelRatio > MIN_PIXEL_RATIO) {
+      next = Math.max(MIN_PIXEL_RATIO, this.pixelRatio * 0.82)
+      this.slowWindows = 0
+    } else if (this.fastWindows >= 8 && this.pixelRatio < this.maxPixelRatio) {
+      // Climb slowly so the resolution does not oscillate around the limit.
+      next = Math.min(this.maxPixelRatio, this.pixelRatio * 1.1)
+      this.fastWindows = 0
+    }
+    if (next === this.pixelRatio) return
+    this.pixelRatio = next
+    this.info.pixelRatio = next
+    this.renderer.setPixelRatio(next)
+    this.renderer.setSize(this.canvasWidth, this.canvasHeight, true)
   }
 
   private draw(delta: number): void {
@@ -222,6 +267,16 @@ export class Stage {
 
 export function isMobile(): boolean {
   return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 640
+}
+
+/**
+ * Phones, tablets and modest laptops: few cores, little memory, or a touch
+ * screen. These get no shadows, no multisampling, a lower resolution ceiling
+ * and reduced simulation detail.
+ */
+export function isLowSpec(): boolean {
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+  return isMobile() || navigator.hardwareConcurrency <= 4 || (memory !== undefined && memory <= 4)
 }
 
 export function prefersReducedMotion(): boolean {

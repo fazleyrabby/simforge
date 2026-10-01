@@ -25,6 +25,8 @@ export interface ServerNode {
   power: number
   /** Seconds remaining before a crashed node reboots. */
   boot: number
+  /** Switched off by the operator; stays down until switched back on. */
+  held: boolean
 }
 
 export interface RackParams {
@@ -117,6 +119,7 @@ export class RackLogic {
         jobs: [],
         power: P_IDLE,
         boot: 0,
+        held: false,
       })
     }
   }
@@ -137,10 +140,23 @@ export class RackLogic {
   /** Bring a crashed node back online immediately. */
   reboot(nodeId: number): void {
     const node = this.nodes[nodeId]
-    if (node.status === 'down') {
+    if (node.status === 'down' && !node.held) {
       node.boot = 0
       node.status = 'idle'
       node.temp = Math.min(node.temp, T_THROTTLE)
+    }
+  }
+
+  /** Operator power switch. A node switched off hands its work back and stays down. */
+  setPower(nodeId: number, on: boolean): void {
+    const node = this.nodes[nodeId]
+    if (on) {
+      if (!node.held) return
+      node.held = false
+      node.boot = BOOT_TIME / 2
+    } else if (!node.held) {
+      node.held = true
+      if (node.status !== 'down') this.takeDown(node)
     }
   }
 
@@ -231,8 +247,9 @@ export class RackLogic {
   private stepNode(node: ServerNode, dt: number): void {
     if (node.status === 'down') {
       node.power = 0
-      node.boot -= dt
       this.updateTemp(node, dt)
+      if (node.held) return
+      node.boot -= dt
       if (node.boot <= 0) node.status = 'idle'
       return
     }
@@ -277,13 +294,17 @@ export class RackLogic {
   }
 
   private crash(node: ServerNode): void {
+    this.takeDown(node)
+    this.onDown?.(node)
+  }
+
+  private takeDown(node: ServerNode): void {
     node.status = 'down'
     node.boot = BOOT_TIME
     node.power = 0
     // Unfinished work goes back to the front of the queue to be rescheduled.
     for (let i = node.jobs.length - 1; i >= 0; i--) this.queue.unshift(node.jobs[i])
     node.jobs.length = 0
-    this.onDown?.(node)
   }
 
   private finish(job: Job): void {

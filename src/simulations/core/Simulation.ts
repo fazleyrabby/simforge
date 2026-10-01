@@ -20,6 +20,7 @@ export interface SimulationContext {
   renderer: THREE.WebGLRenderer
   quality: Quality
   seed: number
+  /** True on low-spec devices (phones, tablets, few cores): build a lighter world. */
   mobile: boolean
   reducedMotion: boolean
   /** DOM element the simulation is drawn into. Used for pointer input. */

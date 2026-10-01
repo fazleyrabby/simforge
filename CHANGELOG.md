@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.5.0 — 2026-10-01
+
+Detail and interaction pass on the Server Rack and Orbital Mechanics, plus performance scaling.
+
+### Added
+
+- **Server Rack hardware**: four server types with different front panels (compute with drive bays and vent, storage with bays across, GPU with fan grilles and accent strip, blade with vertical sleds). Each cabinet also carries a patch panel, switch with link LEDs, firewall, 2U UPS, 1U PDU and (full view) a storage shelf. Colored patch leads run up the right rail to the switch, blue management leads down the left, and jumpers loop from patch panel to switch. Casters, rail mounting holes, a roof router, a perforated mesh door, raised-floor tiles with cold-air grates, a room cooling unit that follows the Cooling control, a crash cart, spare servers and an extinguisher.
+- **Server Rack interaction**: hover outlines a server; click pulls it out on its rails and shows its state, temperature and jobs; click again pushes it back. `Power Selected` switches the pulled-out server off or on (its jobs return to the queue). Clicking a crashed server restarts it. Clicking the door swings it.
+- **Orbital Mechanics detail**: animated shader surface and pulsing corona on the star, procedurally textured planets with axial tilt and spin, atmospheres, ringed gas giants, fading trails, dashed reference orbits, an asteroid belt of test particles on Keplerian orbits, a gravity-well grid that bends toward every mass, comet tails that point away from the star, and a drifting layered starfield. New `Gravity Well` toggle and `Fastest Planet` stat.
+- **Dynamic resolution**: the stage lowers the render scale when the frame rate stays under 48 FPS and raises it again when there is headroom. The debug overlay shows the current render scale.
+- **Low-spec profile** for phones, tablets and machines with few cores or little memory: no shadows, no multisampling, a lower resolution ceiling, and lighter worlds.
+- `three/merge.ts`: collapses static meshes into one mesh per material. Applied to the rack.
+- Render-time extrapolation for dyno wheels, rollers and fan, and for orbital bodies, so they move smoothly on displays faster than 60 Hz.
+
+### Fixed
+
+- **Orbital**: the system no longer drifts out of view. The star now starts with the recoil that cancels the planets' momentum.
+- **Orbital**: comets could pass through the star and be flung out with a large energy gain. They now launch on a Kepler ellipse with a perihelion outside the star, relative to the star's current position and velocity.
+- **Orbital**: stepping is now adaptive across every pair of bodies, so close passes get finer steps.
+- **Rack**: exhaust streaks were drawn offset from the cabinets (rack offset applied twice).
+- **Rack**: roof fans kept spinning while paused and ran faster on high-refresh displays; they now advance in the simulation step.
+- **Rack**: the wall display was hidden behind the cabinets; it now sits above them.
+
+### Changed
+
+- `spec.md` is no longer tracked; it stays local.
+- Only the end cabinet has a door. A door between two cabinets hid its neighbour from the camera.
+- Rack power is now a toolbar action rather than a second click.
+
+### Verified
+
+- Type check, 40 unit tests and the production build pass. New tests: operator power switch on the rack, comet perihelion and energy.
+- In the browser: rack renders with all hardware; select, power off, and push-back clicks behave as described; draw calls for the rack fell from 962 to 560 after merging. Orbital renders and stays bound through a comet pass (total energy stays negative).
+
+### Not verified
+
+- Dynamic resolution and the low-spec profile on real low-end hardware. The logic is in place but was not exercised on a slow device, and the test browser pane throttles frames.
+- Smoothness on a 120 Hz display.
+- Rack hover outline, door click, and the homepage previews of the rack and orbital after these changes.
+- Open Graph images were not regenerated; the rack and orbital images show the earlier visuals.
+
 ## 0.4.0 — 2026-10-01
 
 Closes the last open item from the spec's Definition of Done: Open Graph images (§51).

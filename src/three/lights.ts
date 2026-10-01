@@ -21,10 +21,10 @@ export function addLabLighting(scene: THREE.Scene, ctx: SimulationContext): LabL
   scene.add(rim)
 
   // Previews skip shadows entirely; they share one GPU with every other card.
-  if (ctx.quality === 'full') {
+  // Shadows roughly double the draw calls, so only full views on capable devices get them.
+  if (ctx.quality === 'full' && !ctx.mobile) {
     key.castShadow = true
-    const size = ctx.mobile ? 1024 : 2048
-    key.shadow.mapSize.set(size, size)
+    key.shadow.mapSize.set(2048, 2048)
     key.shadow.bias = -0.0004
     key.shadow.normalBias = 0.03
     key.shadow.radius = 4

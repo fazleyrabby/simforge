@@ -88,6 +88,15 @@ export class OrbitalSystem {
       })
     }
 
+    // Give the star the recoil that cancels the planets' momentum, so the
+    // system's centre of mass stays put instead of drifting out of view.
+    const star = this.bodies[0]
+    for (const body of this.bodies) {
+      if (body.star) continue
+      star.vx -= (body.mass * body.vx) / star.mass
+      star.vy -= (body.mass * body.vy) / star.mass
+    }
+
     this.computeAccelerations()
   }
 
@@ -112,23 +121,53 @@ export class OrbitalSystem {
     this.time += h
   }
 
+  /**
+   * Advance by `total` seconds, splitting it into steps short enough for the
+   * tightest pair in the system: a fixed fraction of the pair's local orbital
+   * time √(d³ / G(m₁+m₂)). A comet at perihelion, or two planets brushing past
+   * each other, therefore get finer steps than the quiet stretches need.
+   */
+  advance(total: number, maxStep: number): void {
+    const bodies = this.bodies
+    let remaining = total
+    let guard = 0
+    while (remaining > 1e-9 && guard++ < 400) {
+      let tightest = Infinity
+      for (let i = 0; i < bodies.length; i++) {
+        for (let j = i + 1; j < bodies.length; j++) {
+          const dx = bodies[j].x - bodies[i].x
+          const dy = bodies[j].y - bodies[i].y
+          const d2 = dx * dx + dy * dy + SOFTENING * SOFTENING
+          tightest = Math.min(tightest, (d2 * Math.sqrt(d2)) / (this.G * (bodies[i].mass + bodies[j].mass)))
+        }
+      }
+      const h = Math.min(remaining, maxStep, 0.02 * Math.sqrt(tightest))
+      this.step(h)
+      remaining -= h
+    }
+  }
+
   /** Launch a fast, eccentric body from the outer edge: a passing comet. */
   addComet(): Body {
-    const outer = this.bodies.reduce((max, body) => Math.max(max, Math.hypot(body.x, body.y)), 4)
+    const star = this.bodies[0]
+    const outer = this.bodies.reduce((max, body) => Math.max(max, Math.hypot(body.x - star.x, body.y - star.y)), 4)
     const r = outer + this.rng.range(3, 6)
     const angle = this.rng.range(0, Math.PI * 2)
-    const x = Math.cos(angle) * r
-    const y = Math.sin(angle) * r
-    // Aim near the star with modest speed so it swings through on an ellipse.
-    const speed = Math.sqrt((this.G * STAR_MASS) / r) * this.rng.range(0.4, 0.75)
-    const toCenter = Math.atan2(-y, -x) + this.rng.range(-0.5, 0.5)
+    // Position and velocity are set relative to the star, wherever it has wandered.
+    const x = star.x + Math.cos(angle) * r
+    const y = star.y + Math.sin(angle) * r
+    // Start at the far point of a Kepler ellipse whose near point clears the
+    // star: from vis-viva, speed at aphelion r for perihelion q is √(GM·2q / (r(r+q))).
+    const perihelion = this.rng.range(1.8, 3)
+    const speed = Math.sqrt((this.G * STAR_MASS * 2 * perihelion) / (r * (r + perihelion)))
+    const dir = this.rng.chance(0.5) ? 1 : -1
     const comet: Body = {
       id: this.bodies.length,
       mass: this.rng.range(0.2, 1),
       x,
       y,
-      vx: Math.cos(toCenter) * speed,
-      vy: Math.sin(toCenter) * speed,
+      vx: star.vx - Math.sin(angle) * speed * dir,
+      vy: star.vy + Math.cos(angle) * speed * dir,
       ax: 0,
       ay: 0,
       radius: 0.12,

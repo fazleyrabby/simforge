@@ -126,4 +126,23 @@ describe('RackLogic', () => {
     expect(snapshot(21)).toEqual(snapshot(21))
     expect(snapshot(21)).not.toEqual(snapshot(22))
   })
+
+  it('keeps a switched-off node down and requeues its work until switched on', () => {
+    const logic = new RackLogic(new Rng(3), 4, { arrivalRate: 400, jobSize: 200, cooling: 1, powerCap: 16, failures: false })
+    for (let i = 0; i < 300; i++) logic.step(1 / 60)
+    const node = logic.nodes[0]
+    const held = node.jobs.length
+    const queued = logic.queue.length
+    logic.setPower(0, false)
+    expect(node.status).toBe('down')
+    expect(logic.queue.length).toBe(queued + held)
+    for (let i = 0; i < 1200; i++) logic.step(1 / 60)
+    expect(node.status).toBe('down')
+    expect(node.jobs.length).toBe(0)
+    logic.reboot(0)
+    expect(node.status).toBe('down')
+    logic.setPower(0, true)
+    for (let i = 0; i < 600; i++) logic.step(1 / 60)
+    expect(node.status).not.toBe('down')
+  })
 })
