@@ -10,12 +10,13 @@ Procedural Web Audio Engine across all 7 simulations and control panel item sele
   - **Muted by default**: Respects `spec.md §31` and browser autoplay policies. Unmuted via interactive toggle buttons in the header and the viewer action bar (`Sound: OFF / ON`).
   - **Soundscapes**:
     - **01 Gears**: Mechanical tooth-meshing clicks and rotational whine scaled to motor RPM.
-    - **02 Heat**: Thermal chime harmonics on user clicks and warm ambient diffusion hum.
-    - **03 Rolling Road**: Dual-oscillator engine rev sweeps tracking vehicle speed/RPM, road roller friction hiss, and power-run completion chimes.
-    - **04 Factory**: Conveyor belt mechanical rumble, pneumatic stamping chuffs, and machine jam double-beep alerts.
-    - **05 Server Rack**: Datacenter cooling fan air hiss, random hard drive seek click bursts, and mechanical relay clicks on server drawer/power interactions.
+    - **02 Heat**: Thermal chime harmonics on user clicks and canvas painting, plus warm ambient diffusion hum.
+    - **03 Rolling Road**: Dual-oscillator engine rev sweeps tracking vehicle speed/RPM, road roller friction hiss, gearshift clunks, tyre slip squeals, and power-run completion chimes.
+    - **04 Factory**: Conveyor belt mechanical rumble, pneumatic stamping chuffs, machine repair chimes, and machine jam double-beep alerts.
+    - **05 Server Rack**: Datacenter cooling fan air hiss, random hard drive seek click bursts, server drawer slide friction, server reboot tone sequence, cabinet door swings, and mechanical relay clicks.
     - **06 Orbital**: Deep celestial harmonic sine drone (A1/E2/A2 chords) and resonant flyby pitch sweeps.
-    - **07 Hydraulic Press**: Electric pump motor hum, metallic strain creaks under overload, violent explosion sub-thump and debris bursts, and Nokia 3310 8-bit victory arpeggio.
+    - **07 Hydraulic Press**: Electric pump motor hum, metallic strain creaks under overload, ram-to-object impact clunk, flying bolt pop ricochets, violent explosion sub-thump and debris bursts, and Nokia 3310 8-bit victory arpeggio.
+  - **Tactile Laboratory UI feedback**: Procedural micro-clicks for buttons and toggles, potentiometer tick feedback on range slider scrubbing, subtle card hover tones on the homepage grid, and dual-tone share link chimes.
 - **Headless memory and shader audit script** (`scripts/audit.mjs`): Automated multi-cycle navigation test tracking WebGL geometries, textures, shader programs, and draw calls across all simulations with audio active.
 
 ### Fixed

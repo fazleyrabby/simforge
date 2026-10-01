@@ -275,6 +275,7 @@ export default class HeatSimulation extends BaseSimulation {
     this.stroke = { mode, x: cell.x, y: cell.y, pointerId: event.pointerId }
     this.ctx.element?.setPointerCapture(event.pointerId)
     this.apply(mode, cell.x, cell.y)
+    this.events.emit({ type: mode === 'paint' ? 'heat_paint' : 'heat_erase' })
   }
 
   private onPointerMove = (event: PointerEvent): void => {

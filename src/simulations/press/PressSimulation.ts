@@ -247,6 +247,7 @@ export default class PressSimulation extends BaseSimulation {
         case 'contact':
           this.fx.sparks(new THREE.Vector3(0, this.logic.ramY, 0), 6, 80)
           this.builtObject.setScreen?.('idle', 1)
+          this.events.emit({ type: 'ram_contact' })
           break
         case 'shatter':
           shatterObject(this.builtObject, this.logic.object, this.debris, this.fx, this.scene, this.rng)
@@ -270,6 +271,7 @@ export default class PressSimulation extends BaseSimulation {
         case 'bolt_pop':
           this.pressModel.launchBolt(this.debris, this.fx)
           this.shake = Math.max(this.shake, 0.4)
+          this.events.emit({ type: 'bolt_pop' })
           break
         case 'explode':
           this.pressModel.explode(this.fx, this.debris)
@@ -287,6 +289,7 @@ export default class PressSimulation extends BaseSimulation {
           break
         case 'landed':
           this.builtObject.setScreen?.('victory', 1)
+          this.events.emit({ type: 'nokia_survived' })
           break
         case 'complete':
           this.camPreset = 'wide'

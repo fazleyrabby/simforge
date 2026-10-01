@@ -1210,6 +1210,7 @@ export default class RackSimulation extends BaseSimulation {
     if (target.userData.door !== undefined) {
       const rack = this.racks[target.userData.door as number]
       rack.doorOpen = !rack.doorOpen
+      this.events.emit({ type: 'door_toggle' })
       return
     }
     const id = target.userData.nodeId as number
@@ -1218,11 +1219,14 @@ export default class RackSimulation extends BaseSimulation {
     if (node.status === 'down' && !node.held) {
       this.logic.reboot(id)
       this.selected = id
+      this.events.emit({ type: 'server_reboot' })
     } else if (this.selected === id) {
       // Clicking the pulled-out server pushes it back in.
       this.selected = -1
+      this.events.emit({ type: 'server_pushed' })
     } else {
       this.selected = id
+      this.events.emit({ type: 'server_pulled' })
     }
   }
 }

@@ -4,6 +4,7 @@ import { useSimulation } from '../app/useSimulation'
 import { defaultParams, type SimulationDefinition } from '../simulations/core/registry'
 import type { StatValue } from '../simulations/core/Simulation'
 import { SimulationStatus } from './SimulationStatus'
+import { audioEngine } from '../audio/AudioEngine'
 
 const ACTIVE_TIME_SCALE = 1.6
 
@@ -68,10 +69,19 @@ export function SimulationCard({ definition }: { definition: SimulationDefinitio
         active ? 'z-10 scale-[1.012] border-amber/70 [--tick:var(--color-amber)]' : 'border-lab-line'
       } ${definition.layout}`}
       style={{ viewTransitionName: `sim-${definition.id}` }}
-      onPointerEnter={(event) => event.pointerType === 'mouse' && setHovered(true)}
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse') {
+          audioEngine.playCardHover()
+          setHovered(true)
+        }
+      }}
       onPointerLeave={() => setHovered(false)}
-      onFocus={() => setHovered(true)}
+      onFocus={() => {
+        audioEngine.playCardHover()
+        setHovered(true)
+      }}
       onBlur={() => setHovered(false)}
+      onClick={() => audioEngine.playUiClick('neutral')}
     >
       <div ref={setElement} className="absolute inset-0" />
 

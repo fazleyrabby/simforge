@@ -218,7 +218,7 @@ class DynoAudio implements SimulationAudioDriver {
   }
 
   handleEvent(event: SimulationEvent): void {
-    if (event.type === 'run_complete') {
+    if (event.type === 'run_complete' || event.type === 'power_run_complete') {
       // Throttle blip / chime
       const osc = this.ctx.createOscillator()
       const g = this.ctx.createGain()
@@ -232,6 +232,32 @@ class DynoAudio implements SimulationAudioDriver {
       g.connect(this.dest)
       osc.start()
       osc.stop(this.ctx.currentTime + 0.5)
+    } else if (event.type === 'gear_shift') {
+      // Throttle cut + mechanical gear engagement clunk
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(130, this.ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(45, this.ctx.currentTime + 0.05)
+      g.gain.setValueAtTime(0.08, this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.06)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start()
+      osc.stop(this.ctx.currentTime + 0.07)
+    } else if (event.type === 'wheel_slip') {
+      // Tyre squeal chirp
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(850, this.ctx.currentTime)
+      osc.frequency.linearRampToValueAtTime(1250, this.ctx.currentTime + 0.12)
+      g.gain.setValueAtTime(0.035, this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.15)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start()
+      osc.stop(this.ctx.currentTime + 0.16)
     }
   }
 
@@ -302,7 +328,20 @@ class FactoryAudio implements SimulationAudioDriver {
   }
 
   handleEvent(event: SimulationEvent): void {
-    if (event.type === 'jam' || event.level === 'warn') {
+    if (event.type === 'machine_repaired') {
+      // Wrench tap / positive repair chime
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(587.33, this.ctx.currentTime) // D5
+      osc.frequency.setValueAtTime(880, this.ctx.currentTime + 0.08) // A5
+      g.gain.setValueAtTime(0.06, this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.25)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start()
+      osc.stop(this.ctx.currentTime + 0.26)
+    } else if (event.type === 'jam' || event.level === 'warn') {
       // Double alarm beep
       for (const offset of [0, 0.15]) {
         const osc = this.ctx.createOscillator()
@@ -383,19 +422,62 @@ class RackAudio implements SimulationAudioDriver {
     }
   }
 
-  handleEvent(_event: SimulationEvent): void {
-    // Relay click
-    const osc = this.ctx.createOscillator()
-    const g = this.ctx.createGain()
-    osc.type = 'triangle'
-    osc.frequency.setValueAtTime(320, this.ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.04)
-    g.gain.setValueAtTime(0.08, this.ctx.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.05)
-    osc.connect(g)
-    g.connect(this.dest)
-    osc.start()
-    osc.stop(this.ctx.currentTime + 0.06)
+  handleEvent(event: SimulationEvent): void {
+    if (event.type === 'door_toggle') {
+      // Cabinet door hinge squeak + magnetic latch tap
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(420, this.ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(750, this.ctx.currentTime + 0.08)
+      g.gain.setValueAtTime(0.04, this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.09)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start()
+      osc.stop(this.ctx.currentTime + 0.1)
+    } else if (event.type === 'server_pulled' || event.type === 'server_pushed') {
+      // Metal drawer slide friction + latch
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(event.type === 'server_pulled' ? 180 : 360, this.ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(event.type === 'server_pulled' ? 360 : 120, this.ctx.currentTime + 0.09)
+      g.gain.setValueAtTime(0.06, this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.1)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start()
+      osc.stop(this.ctx.currentTime + 0.11)
+    } else if (event.type === 'server_reboot') {
+      // Server reboot ascending pitch beep
+      ;[440, 660, 880].forEach((freq, idx) => {
+        const time = this.ctx.currentTime + idx * 0.06
+        const osc = this.ctx.createOscillator()
+        const g = this.ctx.createGain()
+        osc.type = 'sine'
+        osc.frequency.value = freq
+        g.gain.setValueAtTime(0.035, time)
+        g.gain.exponentialRampToValueAtTime(0.0001, time + 0.05)
+        osc.connect(g)
+        g.connect(this.dest)
+        osc.start(time)
+        osc.stop(time + 0.055)
+      })
+    } else {
+      // Relay click
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(320, this.ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.04)
+      g.gain.setValueAtTime(0.08, this.ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.05)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start()
+      osc.stop(this.ctx.currentTime + 0.06)
+    }
   }
 
   dispose(): void {
@@ -524,13 +606,45 @@ class PressAudio implements SimulationAudioDriver {
 
   handleEvent(event: SimulationEvent): void {
     const t = event.type
-    if (t === 'press_exploded' || t === 'object_shattered') {
+    if (t === 'press_exploded' || t === 'press_destroyed' || t === 'object_shattered' || t === 'shattered') {
       this.playExplosion()
     } else if (t === 'nokia_survived') {
       this.playNokiaJingle()
-    } else if (t === 'strain_overload' || t === 'plate_cracked') {
+    } else if (t === 'strain_overload' || t === 'plate_cracked' || t === 'overload') {
       this.playCreak()
+    } else if (t === 'bolt_pop') {
+      this.playBoltPop()
+    } else if (t === 'ram_contact' || t === 'contact') {
+      this.playRamContact()
     }
+  }
+
+  private playBoltPop(): void {
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(3200 + Math.random() * 800, this.ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(1400, this.ctx.currentTime + 0.08)
+    g.gain.setValueAtTime(0.12, this.ctx.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.1)
+    osc.connect(g)
+    g.connect(this.dest)
+    osc.start()
+    osc.stop(this.ctx.currentTime + 0.11)
+  }
+
+  private playRamContact(): void {
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(160, this.ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12)
+    g.gain.setValueAtTime(0.15, this.ctx.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.15)
+    osc.connect(g)
+    g.connect(this.dest)
+    osc.start()
+    osc.stop(this.ctx.currentTime + 0.16)
   }
 
   private playCreak(): void {

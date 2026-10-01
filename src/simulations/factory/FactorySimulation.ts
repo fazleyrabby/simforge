@@ -597,6 +597,9 @@ export default class FactorySimulation extends BaseSimulation {
     )
     this.raycaster.setFromCamera(pointer, this.camera)
     const hit = this.raycaster.intersectObjects(this.hitTargets, false)[0]
-    if (hit) this.logic.repair(hit.object.userData.machineId as number)
+    if (hit) {
+      this.logic.repair(hit.object.userData.machineId as number)
+      this.events.emit({ type: 'machine_repaired' })
+    }
   }
 }

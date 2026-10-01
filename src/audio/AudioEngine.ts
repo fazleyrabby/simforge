@@ -100,6 +100,78 @@ class AudioEngine {
     this.compressor.connect(this.masterGain)
     this.masterGain.connect(this.ctx.destination)
   }
+
+  playUiClick(tone: 'neutral' | 'subtle' | 'high' | 'heavy' = 'neutral'): void {
+    if (!this.enabled || !this.ctx || !this.compressor) return
+    const now = this.ctx.currentTime
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+
+    osc.type = tone === 'heavy' ? 'triangle' : 'sine'
+    const freq = tone === 'subtle' ? 600 : tone === 'high' ? 1400 : tone === 'heavy' ? 320 : 900
+    osc.frequency.setValueAtTime(freq, now)
+    osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.4), now + 0.02)
+
+    gain.gain.setValueAtTime(tone === 'subtle' ? 0.02 : 0.04, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025)
+
+    osc.connect(gain)
+    gain.connect(this.compressor)
+    osc.start(now)
+    osc.stop(now + 0.03)
+  }
+
+  playUiSliderTick(): void {
+    if (!this.enabled || !this.ctx || !this.compressor) return
+    const now = this.ctx.currentTime
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(1600, now)
+    gain.gain.setValueAtTime(0.012, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008)
+
+    osc.connect(gain)
+    gain.connect(this.compressor)
+    osc.start(now)
+    osc.stop(now + 0.01)
+  }
+
+  playUiChime(): void {
+    if (!this.enabled || !this.ctx || !this.compressor) return
+    const now = this.ctx.currentTime
+    const notes = [659.25, 880]
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.08
+      const osc = this.ctx!.createOscillator()
+      const gain = this.ctx!.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.04, t)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22)
+      osc.connect(gain)
+      gain.connect(this.compressor!)
+      osc.start(t)
+      osc.stop(t + 0.23)
+    })
+  }
+
+  playCardHover(): void {
+    if (!this.enabled || !this.ctx || !this.compressor) return
+    const now = this.ctx.currentTime
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(700, now)
+    osc.frequency.exponentialRampToValueAtTime(950, now + 0.04)
+    gain.gain.setValueAtTime(0.01, now)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05)
+    osc.connect(gain)
+    gain.connect(this.compressor)
+    osc.start(now)
+    osc.stop(now + 0.055)
+  }
 }
 
 export const audioEngine = new AudioEngine()

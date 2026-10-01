@@ -1,5 +1,6 @@
 import type { ParamDefinition, SimulationDefinition } from '../simulations/core/registry'
 import type { ParamValue } from '../simulations/core/Simulation'
+import { audioEngine } from '../audio/AudioEngine'
 
 interface Props {
   definition: SimulationDefinition
@@ -23,7 +24,10 @@ export function ControlPanel({ definition, values, onChange, onClose }: Props) {
         {onClose && (
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              audioEngine.playUiClick('subtle')
+              onClose()
+            }}
             className="lab-label flex items-center gap-1 border border-lab-line px-2 py-0.5 text-amber hover:text-lab-bright sm:hidden"
             aria-label="Close controls"
           >
@@ -60,7 +64,10 @@ export function ControlPanel({ definition, values, onChange, onClose }: Props) {
                   step={param.step ?? 1}
                   value={number}
                   style={{ '--fill': `${((number - min) / (max - min)) * 100}%` } as React.CSSProperties}
-                  onChange={(event) => onChange(param.key, Number(event.target.value))}
+                  onChange={(event) => {
+                    audioEngine.playUiSliderTick()
+                    onChange(param.key, Number(event.target.value))
+                  }}
                 />
               </div>
             )
@@ -78,7 +85,10 @@ export function ControlPanel({ definition, values, onChange, onClose }: Props) {
                   aria-checked={Boolean(value)}
                   aria-labelledby={id}
                   className="lab-btn !min-h-7 w-14"
-                  onClick={() => onChange(param.key, !value)}
+                  onClick={() => {
+                    audioEngine.playUiClick('heavy')
+                    onChange(param.key, !value)
+                  }}
                 >
                   {value ? 'On' : 'Off'}
                 </button>
@@ -100,7 +110,10 @@ export function ControlPanel({ definition, values, onChange, onClose }: Props) {
                     id={id}
                     className="lab-select"
                     value={String(value)}
-                    onChange={(event) => onChange(param.key, event.target.value)}
+                    onChange={(event) => {
+                      audioEngine.playUiClick('subtle')
+                      onChange(param.key, event.target.value)
+                    }}
                   >
                     {options.map((option) => (
                       <option key={option.value} value={option.value} className="bg-lab-card text-lab-bright">
@@ -132,7 +145,10 @@ export function ControlPanel({ definition, values, onChange, onClose }: Props) {
                     aria-checked={value === option.value}
                     className="lab-btn !min-h-7 flex-1 !px-2 text-center text-xs truncate"
                     title={option.label}
-                    onClick={() => onChange(param.key, option.value)}
+                    onClick={() => {
+                      audioEngine.playUiClick('subtle')
+                      onChange(param.key, option.value)
+                    }}
                   >
                     {option.label}
                   </button>

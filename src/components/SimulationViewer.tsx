@@ -291,10 +291,25 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
         </div>
 
         <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto max-w-full px-2 py-2 sm:flex-wrap sm:justify-center sm:gap-2 sm:p-5 no-scrollbar">
-          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+          <button
+            type="button"
+            className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+            aria-pressed={paused}
+            onClick={() => {
+              audioEngine.playUiClick('neutral')
+              setPaused((value) => !value)
+            }}
+          >
             {paused ? 'Resume' : 'Pause'}
           </button>
-          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={reset}>
+          <button
+            type="button"
+            className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+            onClick={() => {
+              audioEngine.playUiClick('heavy')
+              reset()
+            }}
+          >
             Reset
           </button>
           {definition.actions.map((action) => (
@@ -303,6 +318,7 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
               type="button"
               className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink font-semibold text-amber border-amber/60"
               onClick={() => {
+                audioEngine.playUiClick('high')
                 simulation?.action(action.key)
                 setPaused(false)
               }}
@@ -310,22 +326,58 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
               {action.label}
             </button>
           ))}
-          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={randomize}>
+          <button
+            type="button"
+            className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+            onClick={() => {
+              audioEngine.playUiClick('neutral')
+              randomize()
+            }}
+          >
             {definition.randomizeLabel}
           </button>
-          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={() => controlsRef.current?.reset()}>
+          <button
+            type="button"
+            className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+            onClick={() => {
+              audioEngine.playUiClick('subtle')
+              controlsRef.current?.reset()
+            }}
+          >
             Reset Cam
           </button>
-          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" aria-pressed={panelOpen} onClick={() => setPanelOpen((value) => !value)}>
+          <button
+            type="button"
+            className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+            aria-pressed={panelOpen}
+            onClick={() => {
+              audioEngine.playUiClick('subtle')
+              setPanelOpen((value) => !value)
+            }}
+          >
             Controls
           </button>
           <SoundToggle compact />
           {document.fullscreenEnabled && (
-            <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={toggleFullscreen}>
+            <button
+              type="button"
+              className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+              onClick={() => {
+                audioEngine.playUiClick('neutral')
+                toggleFullscreen()
+              }}
+            >
               {fullscreen ? 'Exit Full' : 'Fullscreen'}
             </button>
           )}
-          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={() => void copyLink()}>
+          <button
+            type="button"
+            className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink"
+            onClick={() => {
+              audioEngine.playUiChime()
+              void copyLink()
+            }}
+          >
             {copied ? 'Copied' : 'Share'}
           </button>
         </div>

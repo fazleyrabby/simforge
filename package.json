@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "audit": "node scripts/audit.mjs",
+    "audit:sims": "node scripts/audit.mjs",
     "typecheck": "tsc --noEmit",
     "og": "node scripts/og.mjs"
   },
