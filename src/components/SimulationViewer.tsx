@@ -40,6 +40,7 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
   const [paused, setPaused] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   const [panelOpen, setPanelOpen] = useState(() => !isMobile())
+  const [statsOpen, setStatsOpen] = useState(() => !isMobile())
   const [debug, setDebug] = useState(() => searchParams.get('debug') === 'true')
   const [copied, setCopied] = useState(false)
   const [alerts, setAlerts] = useState<Alert[]>([])
@@ -197,36 +198,46 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
       />
 
       <div className="pointer-events-none absolute inset-0 flex flex-col">
-        <div className="flex items-start justify-between gap-3 p-3 sm:p-5">
+        <div className="flex items-start justify-between gap-2 p-2.5 sm:p-5">
           {fullscreen ? (
             <span />
           ) : (
-            <div className="pointer-events-auto min-w-0 max-w-md">
+            <div className="pointer-events-auto min-w-0 max-w-[55vw] sm:max-w-md">
               <Link to="/" viewTransition className="lab-label hover:text-lab-bright">
                 ← Simulation Lab
               </Link>
-              <h1 className="mt-2 font-mono text-base font-semibold uppercase tracking-[0.16em] text-lab-bright sm:text-lg">
-                <span className="mr-3 text-amber">{definition.index}</span>
+              <h1 className="mt-1 font-mono text-sm font-semibold uppercase tracking-[0.16em] text-lab-bright truncate sm:mt-2 sm:text-lg">
+                <span className="mr-2 text-amber sm:mr-3">{definition.index}</span>
                 {definition.title}
               </h1>
               <p className="mt-1 hidden text-sm leading-relaxed text-lab-dim sm:block">{definition.summary}</p>
-              <p className="lab-label mt-2">
-                Seed {seed}
-                {paused && <span className="ml-3 text-amber">Paused</span>}
-              </p>
+              <div className="mt-1 flex items-center gap-2 sm:mt-2">
+                <p className="lab-label text-[0.625rem] sm:text-[0.6875rem]">
+                  Seed {seed}
+                  {paused && <span className="ml-2 text-amber">Paused</span>}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStatsOpen((v) => !v)}
+                  className="lab-label ml-1 border border-lab-line px-1.5 py-0.5 text-amber hover:text-lab-bright sm:hidden"
+                  aria-pressed={statsOpen}
+                >
+                  {statsOpen ? 'Hide Stats' : 'Stats'}
+                </button>
+              </div>
             </div>
           )}
-          {ready && (
-            <div className="pointer-events-auto shrink-0">
+          {ready && statsOpen && (
+            <div className="pointer-events-auto shrink-0 max-w-[45vw] sm:max-w-none">
               <StatsPanel definition={definition} store={store} />
             </div>
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 items-end justify-between gap-3 px-3 sm:items-start sm:px-5">
+        <div className="flex min-h-0 flex-1 items-end justify-between gap-3 px-2 sm:items-start sm:px-5">
           {ready && panelOpen ? (
-            <div className="pointer-events-auto max-h-full w-full overflow-y-auto sm:w-72">
-              <ControlPanel definition={definition} values={values} onChange={changeParam} />
+            <div className="pointer-events-auto max-h-[55vh] w-full overflow-y-auto rounded-t-lg border border-lab-line-strong bg-lab-panel/95 shadow-2xl backdrop-blur-md sm:max-h-full sm:w-72 sm:rounded-none sm:border-0 sm:bg-transparent sm:backdrop-blur-none">
+              <ControlPanel definition={definition} values={values} onChange={changeParam} onClose={() => setPanelOpen(false)} />
             </div>
           ) : (
             <span />
@@ -238,18 +249,18 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
           )}
         </div>
 
-        <div className="pointer-events-auto flex flex-wrap justify-center gap-2 p-3 sm:p-5">
-          <button type="button" className="lab-btn" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+        <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto max-w-full px-2 py-2 sm:flex-wrap sm:justify-center sm:gap-2 sm:p-5 no-scrollbar">
+          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
             {paused ? 'Resume' : 'Pause'}
           </button>
-          <button type="button" className="lab-btn" onClick={reset}>
+          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={reset}>
             Reset
           </button>
           {definition.actions.map((action) => (
             <button
               key={action.key}
               type="button"
-              className="lab-btn"
+              className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink font-semibold text-amber border-amber/60"
               onClick={() => {
                 simulation?.action(action.key)
                 setPaused(false)
@@ -258,22 +269,22 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
               {action.label}
             </button>
           ))}
-          <button type="button" className="lab-btn" onClick={randomize}>
+          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={randomize}>
             {definition.randomizeLabel}
           </button>
-          <button type="button" className="lab-btn" onClick={() => controlsRef.current?.reset()}>
-            Reset Camera
+          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={() => controlsRef.current?.reset()}>
+            Reset Cam
           </button>
-          <button type="button" className="lab-btn" aria-pressed={panelOpen} onClick={() => setPanelOpen((value) => !value)}>
+          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" aria-pressed={panelOpen} onClick={() => setPanelOpen((value) => !value)}>
             Controls
           </button>
           {document.fullscreenEnabled && (
-            <button type="button" className="lab-btn" onClick={toggleFullscreen}>
-              {fullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={toggleFullscreen}>
+              {fullscreen ? 'Exit Full' : 'Fullscreen'}
             </button>
           )}
-          <button type="button" className="lab-btn" onClick={() => void copyLink()}>
-            {copied ? 'Copied' : 'Copy Link'}
+          <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={() => void copyLink()}>
+            {copied ? 'Copied' : 'Share'}
           </button>
         </div>
       </div>

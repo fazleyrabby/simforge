@@ -89,22 +89,22 @@ export function SimulationCard({ definition }: { definition: SimulationDefinitio
       </span>
 
       <div
-        className={`pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 p-3 transition-opacity duration-200 sm:p-4 ${
+        className={`pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 p-2.5 transition-opacity duration-200 sm:gap-3 sm:p-4 ${
           active && status === 'ready' ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <dl className="lab-panel flex gap-5 px-3 py-2">
+        <dl className="lab-panel flex flex-wrap gap-2.5 sm:gap-5 px-2.5 py-1.5 sm:px-3 sm:py-2">
           {previewStats.map((stat) => (
             <div key={stat.key}>
-              <dt className="lab-label !text-[0.625rem]">{stat.label}</dt>
-              <dd className="font-mono text-sm tabular-nums text-lab-bright">
+              <dt className="lab-label !text-[0.5625rem] sm:!text-[0.625rem]">{stat.label}</dt>
+              <dd className="font-mono text-xs tabular-nums text-lab-bright sm:text-sm">
                 {stats[stat.key] ?? '—'}
-                {stat.unit && <span className="ml-1 text-xs text-lab-dim">{stat.unit}</span>}
+                {stat.unit && <span className="ml-0.5 sm:ml-1 text-[0.625rem] sm:text-xs text-lab-dim">{stat.unit}</span>}
               </dd>
             </div>
           ))}
         </dl>
-        <span className="lab-panel px-3 py-2 font-mono text-[0.6875rem] font-medium tracking-[0.14em] text-amber">
+        <span className="lab-panel px-2.5 py-1.5 sm:px-3 sm:py-2 font-mono text-[0.625rem] sm:text-[0.6875rem] font-medium tracking-[0.14em] text-amber">
           OPEN SIMULATION →
         </span>
       </div>

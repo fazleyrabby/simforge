@@ -611,8 +611,10 @@ function prepareDeformableObject(builtGroup: THREE.Group, onDispose?: () => void
     m.quaternion.identity()
     m.scale.set(1, 1, 1)
     m.userData.orig = m.geometry.attributes.position.array.slice()
+    model.add(m)
     deformableMeshes.push(m)
   }
+  builtGroup.removeFromParent()
 
   const inner = new THREE.Group()
   inner.position.z = size.z / 2

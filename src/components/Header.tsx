@@ -7,12 +7,12 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 export function Header() {
   return (
     <header className="border-b border-lab-line">
-      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-4 py-4 sm:px-6">
-        <Link to="/" className="flex items-baseline gap-3">
-          <span className="font-mono text-sm font-semibold tracking-[0.22em] text-lab-bright">SIMULATION LAB</span>
+      <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-3 sm:px-6 sm:py-4">
+        <Link to="/" className="flex items-baseline gap-2 sm:gap-3">
+          <span className="font-mono text-xs font-semibold tracking-[0.18em] text-lab-bright sm:text-sm sm:tracking-[0.22em]">SIMULATION LAB</span>
           <span className="hidden text-xs text-lab-dim md:inline">{site.tagline}</span>
         </Link>
-        <nav aria-label="Primary" className="flex items-center gap-6">
+        <nav aria-label="Primary" className="flex items-center gap-3.5 sm:gap-6">
           <NavLink to="/simulations" className={navClass}>
             Simulations
           </NavLink>

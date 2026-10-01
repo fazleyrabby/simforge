@@ -334,7 +334,7 @@ export default class PressSimulation extends BaseSimulation {
       const p = CAMS[this.camPreset]
       const k = 1 - Math.exp(-dt * 1.5)
       const aspect = this.camera.aspect || 1
-      const pull = THREE.MathUtils.clamp(0.85 / aspect, 1, 2.2)
+      const pull = THREE.MathUtils.clamp(1.1 / Math.max(0.35, aspect), 1, 2.7)
 
       this.camTarget.set(p.target[0], p.target[1], p.target[2])
       const desiredPos = new THREE.Vector3(p.pos[0], p.pos[1], p.pos[2]).sub(this.camTarget).multiplyScalar(pull).add(this.camTarget)
@@ -377,6 +377,17 @@ export default class PressSimulation extends BaseSimulation {
   override resize(width: number, height: number): void {
     super.resize(width, height)
     this.updateParticleScale()
+    if (this.params.cameraMode === 'auto') {
+      const p = CAMS[this.camPreset]
+      const aspect = this.camera.aspect || 1
+      const pull = THREE.MathUtils.clamp(1.1 / Math.max(0.35, aspect), 1, 2.7)
+      this.camTarget.set(p.target[0], p.target[1], p.target[2])
+      const targetPos = new THREE.Vector3(p.pos[0], p.pos[1], p.pos[2]).sub(this.camTarget).multiplyScalar(pull).add(this.camTarget)
+      this.camPos.copy(targetPos)
+      this.focus.copy(this.camTarget)
+      this.camera.position.copy(this.camPos)
+      this.camera.lookAt(this.focus)
+    }
   }
 
   private updateParticleScale(): void {

@@ -5,6 +5,7 @@ interface Props {
   definition: SimulationDefinition
   values: Record<string, ParamValue>
   onChange: (key: string, value: ParamValue) => void
+  onClose?: () => void
 }
 
 function formatValue(param: ParamDefinition, value: number): string {
@@ -14,10 +15,22 @@ function formatValue(param: ParamDefinition, value: number): string {
 }
 
 /** Generated from the registry's param schema; simulations have no hand-written panels. */
-export function ControlPanel({ definition, values, onChange }: Props) {
+export function ControlPanel({ definition, values, onChange, onClose }: Props) {
   return (
-    <section aria-label={`${definition.title} controls`} className="lab-panel lab-ticks relative p-4">
-      <h2 className="lab-label mb-3 !text-lab-text">{definition.title} control</h2>
+    <section aria-label={`${definition.title} controls`} className="lab-panel lab-ticks relative p-3 sm:p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="lab-label !text-lab-text">{definition.title} control</h2>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="lab-label flex items-center gap-1 border border-lab-line px-2 py-0.5 text-amber hover:text-lab-bright sm:hidden"
+            aria-label="Close controls"
+          >
+            ✕ Close
+          </button>
+        )}
+      </div>
       <div className="flex flex-col gap-3">
         {definition.params.map((param) => {
           const id = `param-${definition.id}-${param.key}`
@@ -78,14 +91,15 @@ export function ControlPanel({ definition, values, onChange }: Props) {
               <span id={id} className="lab-label mb-1.5 block">
                 {param.label}
               </span>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
                 {param.options?.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     role="radio"
                     aria-checked={value === option.value}
-                    className="lab-btn !min-h-7 flex-1 !px-2"
+                    className="lab-btn !min-h-7 flex-1 !px-2 text-center text-xs truncate"
+                    title={option.label}
                     onClick={() => onChange(param.key, option.value)}
                   >
                     {option.label}

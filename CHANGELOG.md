@@ -13,11 +13,23 @@ Port the Hydraulic Press into SimForge as simulation 07, covering materials scie
 - **PressLogic**: Pure, rendering-free state machine, bisection force solver, and failure model covered by 7 unit tests (ductile crush, elastic bounce, brittle shatter, rigid press destruction, capacity thresholds on glass and tungsten, and same-seed reproducibility). Suite now stands at 47 tests.
 - **Open Graph screenshots**: Updated `scripts/og.mjs` and regenerated all 8 route images under `public/og/`, including `press.png` (223 kB), `rack.png` (329 kB), and `orbital.png` (542 kB).
 
+### Fixed
+
+- **Press object levitation**: Objects with centered local origins (rubber ball, glass cube, tungsten cube) appeared floating above the anvil by half their height. In `prepareDeformableObject`, world transform baking with `applyMatrix4` shifted vertex positions to `y >= 0`, but the mesh was left nested inside `builtGroup` which also retained `position.y = -box.min.y`, applying the offset twice. Meshes are now reparented directly to the root model, seating all objects flush on the anvil.
+
+### Changed
+
+- **Mobile responsiveness across all pages**:
+  - **Viewer UI**: Floating controls transform into a slide-up bottom sheet with a dedicated close button on mobile viewports (`sm:w-72 sm:rounded-none`), preventing canvas occlusion. Top bar now features a mobile toggle for stats, responsive typography, and truncated titles. Action bar refactored into a single-row horizontally scrollable touch toolbar with hidden scrollbars, eliminating button wrap on 360–390px screens.
+  - **Press viewport framing**: Camera field of view and aspect pull factor adjusted in `PressSimulation` so tall portrait viewports dynamically pull the camera back to keep the crown beam and platen visible without edge clipping.
+  - **App shell & home**: Navbar, footer, hero, and simulation cards made responsive with touch-friendly paddings, multi-column grid layouts for radio options, and clean flex stacking.
+
 ### Verified
 
 - Type check (`pnpm typecheck`), all 47 unit tests (`pnpm test`), and production build (`pnpm build`) pass cleanly.
 - Route shell for `/simulations/press/index.html` generated with route-specific title, description, and share image.
 - All 8 OG images captured headlessly with Playwright and verified non-empty.
+- Tested responsive layouts on mobile viewport dimensions (375x667, 390x844). Rubber ball, glass cube, tungsten cube verified sitting flush on the anvil surface.
 
 ### Not verified
 

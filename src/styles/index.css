@@ -165,6 +165,14 @@ body {
     border-right: 1px solid var(--tick, var(--color-lab-dim));
     border-bottom: 1px solid var(--tick, var(--color-lab-dim));
   }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes lab-progress {
