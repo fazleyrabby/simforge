@@ -12,6 +12,8 @@ A collection of miniature real-time 3D simulations built directly on Three.js. T
 | 02 | **Heat Grid** | Explicit diffusion on a grid with cooling and held sources. Temperature is uploaded as one float texture; a shader displaces and colors the surface, with relief shading and isotherms. Paint and erase sources with the pointer. |
 | 03 | **Rolling Road** | A seeded car on a chassis dynamometer. Engine torque curve, automatic gearbox, and tyre slip couple the driven wheels to rollers that apply road load (rolling resistance, drag, incline, inertia). A PI driver follows a drive cycle; a power run reports peak power. |
 | 04 | **Factory Production** | A production line where each product carries its own state (raw → mixed → shaped → baking → cooling → packaged). Machines are small state machines; a busy or jammed machine backs the line up behind it. Failures are seeded and repairable by clicking. |
+| 05 | **Server Rack** | A datacenter rack behind a workload scheduler. Jobs arrive into a queue and a least-loaded scheduler places them on the coolest free node, but only while the rack stays under its PDU budget. Busy nodes heat up, hot nodes throttle, and a node past its critical temperature crashes and returns its work to the queue. Power, heat and failure each back the queue up rather than dropping work silently. |
+| 06 | **Orbital Mechanics** | A star and its planets under Newtonian gravity, integrated with velocity Verlet so orbits hold their shape rather than spiralling away. Every body pulls on every other; planets trace Kepler ellipses while perturbing one another, and the system conserves energy and angular momentum. The gravitational constant is live, and a launched comet falls through on a steep ellipse. |
 
 ## Run it
 
@@ -40,7 +42,7 @@ src/
   pages/          home, index, simulation, about, not found
   simulations/
     core/         Simulation interface, BaseSimulation, seeded RNG, registry types
-    gears/ heat/ dyno/ factory/
+    gears/ heat/ dyno/ factory/ rack/ orbital/
   three/          Stage (renderer + loop), cameras, lights, environment, disposal
 ```
 
@@ -71,7 +73,7 @@ Simulations never create a renderer or a loop. `BaseSimulation` supplies the sha
 
 ### Logic is separate from rendering
 
-Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, and same-seed reproducibility.
+Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, and same-seed reproducibility.
 
 ### Determinism
 
@@ -105,7 +107,18 @@ Shortcuts are ignored while a control has focus or a modifier key is held.
 - Products and particles are pooled.
 - Simulation code is split per simulation and loaded on demand.
 
+## Open Graph images
+
+Each route carries its own title, description and share image. The images under `public/og/` are real screenshots of each simulation, captured headlessly from a preview build:
+
+```bash
+pnpm build
+pnpm preview --port 4173   # in one shell
+pnpm og                    # in another — writes public/og/*.png, then rebuild
+```
+
+`pnpm og` drives headless Chromium (Playwright) over each `/simulations/:id`, lets the world run for a few seconds, and writes a 1200×630 board. The build's route-shell step points each route's `og:image` at its file; set `SITE_URL` before `pnpm build` to make the URLs absolute for unfurlers.
+
 ## Not included yet
 
-- Open Graph images (the tags for title and description are in place; no screenshots are committed).
 - Audio. Simulations emit named events an audio layer could subscribe to.

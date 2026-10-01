@@ -48,7 +48,7 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
   const alertId = useRef(0)
 
   const { status, simulation, slot, reload } = useSimulation(definition, element, 'full', seed, values)
-  usePageMeta(definition.title, definition.summary)
+  usePageMeta(definition.title, definition.summary, `/og/${definition.id}.png`)
 
   // The seed always lives in the URL so the address bar is shareable as-is.
   useEffect(() => {

@@ -7,6 +7,8 @@ const loaders: Record<string, SimulationDefinition['load']> = {
   heat: () => import('../simulations/heat/HeatSimulation'),
   dyno: () => import('../simulations/dyno/DynoSimulation'),
   factory: () => import('../simulations/factory/FactorySimulation'),
+  rack: () => import('../simulations/rack/RackSimulation'),
+  orbital: () => import('../simulations/orbital/OrbitalSimulation'),
 }
 
 /**
