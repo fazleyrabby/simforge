@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.7.0 — 2026-10-01
+
+Procedural Web Audio Engine across all 7 simulations and control panel item selector UX overhaul.
+
+### Added
+
+- **Procedural Web Audio Engine** (`src/audio/`): 100% synthesized in real-time using Web Audio API nodes (oscillators, biquad filters, white noise nodes, dynamics compressor). Zero audio downloads or network overhead.
+  - **Muted by default**: Respects `spec.md §31` and browser autoplay policies. Unmuted via interactive toggle buttons in the header and the viewer action bar (`Sound: OFF / ON`).
+  - **Soundscapes**:
+    - **01 Gears**: Mechanical tooth-meshing clicks and rotational whine scaled to motor RPM.
+    - **02 Heat**: Thermal chime harmonics on user clicks and warm ambient diffusion hum.
+    - **03 Rolling Road**: Dual-oscillator engine rev sweeps tracking vehicle speed/RPM, road roller friction hiss, and power-run completion chimes.
+    - **04 Factory**: Conveyor belt mechanical rumble, pneumatic stamping chuffs, and machine jam double-beep alerts.
+    - **05 Server Rack**: Datacenter cooling fan air hiss, random hard drive seek click bursts, and mechanical relay clicks on server drawer/power interactions.
+    - **06 Orbital**: Deep celestial harmonic sine drone (A1/E2/A2 chords) and resonant flyby pitch sweeps.
+    - **07 Hydraulic Press**: Electric pump motor hum, metallic strain creaks under overload, violent explosion sub-thump and debris bursts, and Nokia 3310 8-bit victory arpeggio.
+- **Headless memory and shader audit script** (`scripts/audit.mjs`): Automated multi-cycle navigation test tracking WebGL geometries, textures, shader programs, and draw calls across all simulations with audio active.
+
+### Fixed
+
+- **Control panel item selector clipping**: Multi-option parameters with long descriptive text (such as the 5 Hydraulic Press test subjects: `Nokia 3310 (Rigid)`, `Soda Can (Ductile)`, etc.) previously crammed into a single flex row and truncated into illegible fragments. Replaced with `.lab-select`, a dark lab dropdown selector with a chevron icon that renders labels with full clarity, while preserving segmented buttons for compact 2-3 option selectors.
+
+### Verified
+
+- Automated audit completed 2 full cycles (14 simulation transitions) with Web Audio enabled: geometries returned to exactly 210, textures to 6, shader programs to 12, and draw calls to 301 on the home grid (0 memory/shader leaks).
+- Unit tests (47/47 passing) and production build (`pnpm build`) pass cleanly.
+
+### Not verified
+
+- Audio performance on legacy Android WebAudio implementations.
+
 ## 0.6.0 — 2026-10-01
 
 Port the Hydraulic Press into SimForge as simulation 07, covering materials science, fracture mechanics, and structural overload.

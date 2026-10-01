@@ -103,6 +103,30 @@ body {
     border-color: var(--color-amber);
   }
 
+  .lab-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-height: 2rem;
+    padding: 0.375rem 2rem 0.375rem 0.625rem;
+    background: #0f1217;
+    border: 1px solid var(--color-lab-line-strong);
+    color: var(--color-lab-bright);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: border-color 150ms ease;
+  }
+  .lab-select:hover {
+    border-color: var(--color-lab-dim);
+  }
+  .lab-select:focus-visible {
+    outline: none;
+    border-color: var(--color-amber);
+  }
+
   .lab-range {
     -webkit-appearance: none;
     appearance: none;

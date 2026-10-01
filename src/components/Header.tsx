@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom'
 import { site } from '../data/site'
+import { SoundToggle } from './SoundToggle'
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `lab-label transition-colors hover:text-lab-bright ${isActive ? '!text-amber' : ''}`
@@ -24,6 +25,7 @@ export function Header() {
               GitHub
             </a>
           )}
+          <SoundToggle />
         </nav>
       </div>
     </header>

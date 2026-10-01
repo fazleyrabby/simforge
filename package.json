@@ -1,13 +1,14 @@
 {
   "name": "simforge",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "audit": "node scripts/audit.mjs",
     "typecheck": "tsc --noEmit",
     "og": "node scripts/og.mjs"
   },

@@ -12,6 +12,9 @@ import { ControlPanel } from './ControlPanel'
 import { DebugPanel } from './DebugPanel'
 import { SimulationStatus } from './SimulationStatus'
 import { StatsPanel } from './StatsPanel'
+import { SoundToggle } from './SoundToggle'
+import { audioEngine } from '../audio/AudioEngine'
+import { createSimulationAudioDriver, type SimulationAudioDriver } from '../audio/simAudio'
 
 interface Alert {
   id: number
@@ -109,6 +112,44 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
       unsubscribe()
     }
   }, [simulation, store])
+
+  // Procedural audio driver lifecycle
+  useEffect(() => {
+    let driver: SimulationAudioDriver | null = null
+
+    const syncAudio = (enabled: boolean) => {
+      if (enabled && simulation) {
+        if (!driver) {
+          driver = createSimulationAudioDriver(definition.id)
+        }
+      } else {
+        if (driver) {
+          driver.dispose()
+          driver = null
+        }
+      }
+    }
+
+    const unsubAudio = audioEngine.subscribe(syncAudio)
+
+    const unsubEvents = simulation?.events.on((event) => {
+      driver?.handleEvent(event)
+    })
+
+    const audioTimer = window.setInterval(() => {
+      if (driver && simulation && !paused) {
+        driver.update(simulation.getStats(), 0.05)
+      }
+    }, 50)
+
+    return () => {
+      unsubAudio()
+      unsubEvents?.()
+      window.clearInterval(audioTimer)
+      driver?.dispose()
+      driver = null
+    }
+  }, [simulation, definition.id, paused])
 
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement !== null)
@@ -278,6 +319,7 @@ export function SimulationViewer({ definition }: { definition: SimulationDefinit
           <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" aria-pressed={panelOpen} onClick={() => setPanelOpen((value) => !value)}>
             Controls
           </button>
+          <SoundToggle compact />
           {document.fullscreenEnabled && (
             <button type="button" className="lab-btn !min-h-8 sm:!min-h-9 !px-2.5 sm:!px-3.5 text-[0.625rem] sm:text-[0.6875rem] shrink-0 sm:shrink" onClick={toggleFullscreen}>
               {fullscreen ? 'Exit Full' : 'Fullscreen'}
