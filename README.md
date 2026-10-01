@@ -14,6 +14,7 @@ A collection of miniature real-time 3D simulations built directly on Three.js. T
 | 04 | **Factory Production** | A production line where each product carries its own state (raw → mixed → shaped → baking → cooling → packaged). Machines are small state machines; a busy or jammed machine backs the line up behind it. Failures are seeded and repairable by clicking. |
 | 05 | **Server Rack** | A datacenter rack behind a workload scheduler. Jobs arrive into a queue and a least-loaded scheduler places them on the coolest free node, but only while the rack stays under its PDU budget. Busy nodes heat up, hot nodes throttle, and a node past its critical temperature crashes and returns its work to the queue. Power, heat and failure each back the queue up rather than dropping work silently. |
 | 06 | **Orbital Mechanics** | A star and its planets under Newtonian gravity, integrated with velocity Verlet so orbits hold their shape rather than spiralling away. Every body pulls on every other; planets trace Kepler ellipses while perturbing one another, and the system conserves energy and angular momentum. The gravitational constant is live, and a launched comet falls through on a steep ellipse. |
+| 07 | **Hydraulic Press** | A hydraulic ram descends on test subjects with up to 500 tons. Realistic material physics govern plastic buckling (soda can), elastic rebound (rubber ball), brittle fracture (glass cube), dense yield (tungsten cube), and catastrophic structural failure when the press stalls against the invincible Nokia 3310. |
 
 ## Run it
 
@@ -42,7 +43,7 @@ src/
   pages/          home, index, simulation, about, not found
   simulations/
     core/         Simulation interface, BaseSimulation, seeded RNG, registry types
-    gears/ heat/ dyno/ factory/ rack/ orbital/
+    gears/ heat/ dyno/ factory/ rack/ orbital/ press/
   three/          Stage (renderer + loop), cameras, lights, environment, disposal
 ```
 
@@ -73,7 +74,7 @@ Simulations never create a renderer or a loop. `BaseSimulation` supplies the sha
 
 ### Logic is separate from rendering
 
-Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, and same-seed reproducibility.
+Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`, `PressLogic`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, material stress responses, overload limits, and same-seed reproducibility.
 
 ### Determinism
 
@@ -118,6 +119,9 @@ pnpm og                    # in another — writes public/og/*.png, then rebuild
 ```
 
 `pnpm og` drives headless Chromium (Playwright) over each `/simulations/:id`, lets the world run for a few seconds, and writes a 1200×630 board. The build's route-shell step points each route's `og:image` at its file; set `SITE_URL` before `pnpm build` to make the URLs absolute for unfurlers.
+
+## Credits
+- "Nokia 3310" 3D model by [Artemecia](https://sketchfab.com/3d-models/nokia-3310-67ce77f111394e738ba1be94c146ef29) licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Not included yet
 

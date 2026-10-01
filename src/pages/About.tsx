@@ -12,6 +12,7 @@ const techniques = [
   ['Physics', 'Kinematic gear meshing, curvature-limited cornering, heat diffusion.'],
   ['Shaders', 'The heat field is displaced and colored on the GPU from one float texture.'],
   ['Animation', 'Fixed 60 Hz simulation steps with interpolated rendering.'],
+  ['Materials & Fracture', 'Plastic buckling, elastic rebound, brittle shattering, and structural hydraulic press failure.'],
   ['GPU optimization', 'Instanced meshes, pooled entities, paused off-screen worlds.'],
 ]
 
@@ -51,6 +52,22 @@ export function About() {
             </li>
           ))}
         </ul>
+
+        <h2 className="lab-label mt-10">Credits & Assets</h2>
+        <div className="mt-3 text-sm text-lab-dim">
+          <p>
+            Hydraulic Press 3D model:{' '}
+            <a
+              href="https://sketchfab.com/3d-models/nokia-3310-67ce77f111394e738ba1be94c146ef29"
+              target="_blank"
+              rel="noreferrer"
+              className="text-amber underline-offset-4 hover:underline"
+            >
+              &quot;Nokia 3310&quot; by Artemecia
+            </a>{' '}
+            (CC BY 4.0).
+          </p>
+        </div>
 
         {site.githubUrl && (
           <a href={site.githubUrl} target="_blank" rel="noreferrer" className="lab-btn mt-10">

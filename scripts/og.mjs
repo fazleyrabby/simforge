@@ -19,6 +19,7 @@ const shots = [
   { file: 'factory', path: '/simulations/factory?seed=7312', warm: 6000 },
   { file: 'rack', path: '/simulations/rack?seed=5150', warm: 6000 },
   { file: 'orbital', path: '/simulations/orbital?seed=8814', warm: 5000 },
+  { file: 'press', path: '/simulations/press?seed=42', warm: 4000 },
 ]
 
 const browser = await chromium.launch({

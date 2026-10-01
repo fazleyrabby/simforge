@@ -1,8 +1,31 @@
 # Changelog
 
-## 0.5.0 — 2026-10-01
+## 0.6.0 — 2026-10-01
 
-Detail and interaction pass on the Server Rack and Orbital Mechanics, plus performance scaling.
+Port the Hydraulic Press into SimForge as simulation 07, covering materials science, fracture mechanics, and structural overload.
+
+### Added
+
+- **Hydraulic Press (07)**: A crushing force simulation ported from `smashingNokia`. Test materials feature distinct constitutive behaviors: ductile plastic buckling and crumpling (`sodaCan`), elastic compression and spring-back (`rubberBall`), brittle shatter into dynamic shards (`glassCube`), dense high-capacity yield (`tungstenCube`), and invincible resistance (`nokia3310`).
+- **Overload and failure dynamics**: When an object's resistance exceeds the press capacity, hydraulic pressure ramps to its limit and stalls. The press enters an overload strain phase (3.4 s) featuring bowed steel columns, crack growth on the hazard-stripe plates, fluid leakage, smoking fittings, popping flange bolts launched as physics debris, and catastrophic explosion (shattered plate wedges, snapped column, sagging crown beam, fluid jets, flash pulse, camera shake, and slow-motion).
+- **Nokia 3310**: Procedural phone with an 84×48 monochrome LCD screen rendered via canvas with a 5×7 bitmap font, displaying battery/signal status bars, clock, and menu in idle state, switching to a celebratory smiley face and "3310 WINS" upon press destruction. In full quality mode, asynchronously loads Artemecia's detailed 3D model (CC BY 4.0).
+- **Analog pressure gauge**: Real-time dial texture on the hydraulic pump with circular tick marks, capacity scale, redline overload zone, and a physics-smoothed needle.
+- **PressLogic**: Pure, rendering-free state machine, bisection force solver, and failure model covered by 7 unit tests (ductile crush, elastic bounce, brittle shatter, rigid press destruction, capacity thresholds on glass and tungsten, and same-seed reproducibility). Suite now stands at 47 tests.
+- **Open Graph screenshots**: Updated `scripts/og.mjs` and regenerated all 8 route images under `public/og/`, including `press.png` (223 kB), `rack.png` (329 kB), and `orbital.png` (542 kB).
+
+### Verified
+
+- Type check (`pnpm typecheck`), all 47 unit tests (`pnpm test`), and production build (`pnpm build`) pass cleanly.
+- Route shell for `/simulations/press/index.html` generated with route-specific title, description, and share image.
+- All 8 OG images captured headlessly with Playwright and verified non-empty.
+
+### Not verified
+
+- Dynamic resolution and the low-spec profile on a physical low-spec device.
+- Smoothness at 120 Hz.
+- Shader program count across extended multi-simulation navigation.
+
+
 
 ### Added
 
