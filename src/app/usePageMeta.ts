@@ -6,7 +6,7 @@ function setMeta(selector: string, content: string): void {
 }
 
 /** Keeps the document title, description and share image in sync with the route. */
-export function usePageMeta(title?: string, description: string = site.description, image = '/og/default.png'): void {
+export function usePageMeta(title?: string, description: string = site.description, image = '/og/cover.png'): void {
   useEffect(() => {
     const fullTitle = title ? `${site.name} — ${title}` : site.name
     document.title = fullTitle

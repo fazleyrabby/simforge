@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.4 — 2026-10-03
+
+### Added
+
+- **Cover image** (`public/og/cover.png`, 1200×630): the headline beside a 3×3 mosaic of all nine simulations. Each tile is a capture of the live homepage card, taken by `scripts/og-cover.mjs` (`pnpm og:cover`). It is now the share image for the homepage, the simulations index and the About page; each simulation keeps its own image.
+
+### Verified
+
+- Type check and production build pass. The built `index.html`, `about/index.html` and `simulations/index.html` point `og:image` and `twitter:image` at `/og/cover.png`.
+
+### Not verified
+
+- How the image unfurls on X, Slack or elsewhere. The URLs are relative unless `SITE_URL` is set at build time, and most unfurlers need absolute ones.
+
 ## 0.8.3 — 2026-10-03
 
 ### Added

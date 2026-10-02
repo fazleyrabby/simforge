@@ -125,6 +125,8 @@ pnpm preview --port 4173   # in one shell
 pnpm og                    # in another — writes public/og/*.png, then rebuild
 ```
 
+`pnpm og:cover` (same preview server) builds `public/og/cover.png`, the image used for the homepage and other non-simulation routes: the headline beside a mosaic of every simulation, each tile captured from its live homepage card.
+
 `pnpm og` drives headless Chromium (Playwright) over each `/simulations/:id`, lets the world run for a few seconds, and writes a 1200×630 board. The build's route-shell step points each route's `og:image` at its file; set `SITE_URL` before `pnpm build` to make the URLs absolute for unfurlers.
 
 ## Credits

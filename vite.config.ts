@@ -23,8 +23,8 @@ function routeShells(): Plugin {
       // URLs); falls back to root-relative paths when unset.
       const base = (process.env.SITE_URL ?? '').replace(/\/$/, '')
       const routes = [
-        { path: 'simulations', title: 'Simulations', description: site.description, image: 'default' },
-        { path: 'about', title: 'About', description: site.description, image: 'default' },
+        { path: 'simulations', title: 'Simulations', description: site.description, image: 'cover' },
+        { path: 'about', title: 'About', description: site.description, image: 'cover' },
         ...simulationMeta.map((simulation) => ({
           path: `simulations/${simulation.id}`,
           title: simulation.title,
