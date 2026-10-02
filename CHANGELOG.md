@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.8.0 — 2026-10-02
+
+Two new worlds, and a round of build and loading fixes.
+
+### Added
+
+- **Warehouse Robots (08)**: a robot fleet filling orders on a seeded warehouse floor. Aisles are one-way (alternating north and south, with a westbound lane along the top, an eastbound lane along the bottom and one cross aisle), so traffic circulates and robots cannot meet head on. A dispatcher gives each order to the nearest free robot; it plans a shortest route with A*, loads a tote at the shelf, and carries it to the least busy packing station. Every floor cell is reserved by one robot at a time, so robots queue rather than collide, and a robot stuck for two seconds replans around the blockage. A robot will not pull up beside an occupied station, which would trap the robot inside. Batteries drain with distance and robots return to their own docks to charge.
+  - Click a robot to see its planned route; click a shelf to place a rush order; `Order Surge` adds 20 orders at once.
+  - Racking, cartons, floor arrows, order markers and outbound totes are instanced.
+- **Wind Tunnel (09)**: incompressible air flow past a model, solved with the stable-fluids method on a staggered (MAC) grid. Smoke lines from an inlet rake show the flow; lift and drag coefficients come from pressure on the model's surface and drive two arrows on the model. Four models (wing, cylinder, flat plate, wedge), angle of attack, wind speed, a turbulence control (vorticity confinement), and four views (smoke, air speed, pressure, vorticity). Drag in the air to push it and add smoke.
+  - The solver and the renderer share one outline per model, so the solid the air flows round is the model on screen.
+  - Grid is 96×48 in the full view, 72×36 on low-spec devices and 64×32 in the homepage preview.
+- 21 new unit tests (suite is now 68). Warehouse: strongly connected one-way layouts, A* paths checked against breadth-first search, no two robots ever holding one cell, order conservation, no gridlock at 16 robots under heavy load, fleet scaling, rush orders, charging, reproducibility. Wind tunnel: mass conservation, no flow through the body, uniform flow in an empty tunnel, drag without lift on a symmetric body, lift following angle of attack, blunt versus streamlined drag, smoke bounds, reproducibility.
+- GitHub Actions workflow running type check, tests and build on every push and pull request.
+- `.nvmrc` (Node 22) and an `engines` field (Node 20.19 or newer).
+
+### Changed
+
+- **Bundle**: Three.js and React now ship as separate long-cached chunks. Application code is 65 kB (was part of a single 959 kB file).
+- **Nokia model**: Meshopt geometry compression and WebP textures cut it from 3.13 MB to 725 kB. The loader now registers the Meshopt decoder.
+
+### Fixed
+
+- The first wind tunnel solver used a collocated grid and left about 8% of the wind speed as divergence however many solver sweeps ran. It was rewritten on a staggered grid, where the projection is exact; leftover divergence is now under 0.1% of the wind speed.
+
+### Verified
+
+- Type check, all 68 unit tests and the production build pass.
+- In the browser: both new simulations load and run with no console errors. Warehouse robots route through the aisles, totes leave on the station conveyors, and clicking a shelf places a rush order. The wind tunnel shows smoke lines and, with the cylinder, opposite-spinning shear layers in the vorticity view.
+- The compressed Nokia model loads (725 kB) and renders in the Hydraulic Press.
+- Measured force coefficients are in a believable range: cylinder drag coefficient about 1.25 at 120×60.
+
+### Not verified
+
+- The wing's lift is much lower than a real wing's at small angles (about 0.1 at 8° where a real section gives about 0.8). The grid is coarse (the wing is about four cells thick) and the method adds numerical viscosity. Direction and trend are right; magnitudes are not.
+- Wind tunnel frame cost on a phone. The solver takes about 1.5 ms per step on an M1 at 96×48.
+- Warehouse robot selection by click was not exercised in the browser. (Wind tunnel stirring was: a drag on the flow sheet is claimed by the simulation, and a drag off it orbits the camera.)
+- Homepage preview cards for the two new simulations.
+- The CI workflow has not run yet.
+- Carried over: dynamic resolution on a real low-spec device, and smoothness at 120 Hz.
+
+### Notes
+
+- The two new simulations have no sound yet.
+
 ## 0.7.0 — 2026-10-01
 
 Procedural Web Audio Engine across all 7 simulations and control panel item selector UX overhaul.

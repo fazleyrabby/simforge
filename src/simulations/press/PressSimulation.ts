@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'
 import { makePlinth } from '../../three/plinth'
 import { BaseSimulation } from '../core/BaseSimulation'
 import { Rng } from '../core/random'
@@ -71,6 +72,8 @@ export default class PressSimulation extends BaseSimulation {
     if (ctx.quality === 'full') {
       try {
         const loader = new GLTFLoader()
+        // The model ships Meshopt-compressed with WebP textures (3.1 MB down to 0.7 MB).
+        loader.setMeshoptDecoder(MeshoptDecoder)
         const gltf = await loader.loadAsync('/models/nokia3310/nokia_3310.glb')
         this.gltfModelScene = gltf.scene
         this.gltfModelScene.traverse((o) => {

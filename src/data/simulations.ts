@@ -10,6 +10,8 @@ const loaders: Record<string, SimulationDefinition['load']> = {
   rack: () => import('../simulations/rack/RackSimulation'),
   orbital: () => import('../simulations/orbital/OrbitalSimulation'),
   press: () => import('../simulations/press/PressSimulation'),
+  warehouse: () => import('../simulations/warehouse/WarehouseSimulation'),
+  tunnel: () => import('../simulations/tunnel/TunnelSimulation'),
 }
 
 /**

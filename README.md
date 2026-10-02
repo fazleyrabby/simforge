@@ -15,8 +15,12 @@ A collection of miniature real-time 3D simulations built directly on Three.js. T
 | 05 | **Server Rack** | A datacenter rack behind a workload scheduler. Jobs arrive into a queue and a least-loaded scheduler places them on the coolest free node, but only while the rack stays under its PDU budget. Busy nodes heat up, hot nodes throttle, and a node past its critical temperature crashes and returns its work to the queue. Power, heat and failure each back the queue up rather than dropping work silently. |
 | 06 | **Orbital Mechanics** | A star and its planets under Newtonian gravity, integrated with velocity Verlet so orbits hold their shape rather than spiralling away. Every body pulls on every other; planets trace Kepler ellipses while perturbing one another, and the system conserves energy and angular momentum. The gravitational constant is live, and a launched comet falls through on a steep ellipse. |
 | 07 | **Hydraulic Press** | A hydraulic ram descends on test subjects with up to 500 tons. Realistic material physics govern plastic buckling (soda can), elastic rebound (rubber ball), brittle fracture (glass cube), dense yield (tungsten cube), and catastrophic structural failure when the press stalls against the invincible Nokia 3310. |
+| 08 | **Warehouse Robots** | A robot fleet filling orders on a seeded warehouse floor. Aisles are one-way, so traffic circulates and robots never meet head on. A dispatcher gives each order to the nearest free robot, which plans a shortest route with A*, loads a tote and carries it to the least busy packing station. Each floor cell is reserved by one robot at a time; a robot stuck in a queue replans around it. Batteries drain with distance and robots return to their docks to charge. |
+| 09 | **Wind Tunnel** | A slice of incompressible air solved with the stable-fluids method on a staggered (MAC) grid: velocity is advected along itself, then projected so the flow through every cell balances. A solid model sits in the flow, smoke lines make it visible, and pressure on the model's surface gives lift and drag coefficients. The solver and the renderer share one outline, so the solid in the air is exactly the model on screen. |
 
 ## Run it
+
+Needs Node 20.19 or newer (`.nvmrc` pins 22) and pnpm.
 
 ```bash
 pnpm install
@@ -74,7 +78,7 @@ Simulations never create a renderer or a loop. `BaseSimulation` supplies the sha
 
 ### Logic is separate from rendering
 
-Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`, `PressLogic`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, material stress responses, overload limits, and same-seed reproducibility.
+Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`, `PressLogic`, `WarehouseLogic`, `FluidGrid`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, material stress responses, overload limits, one-way layouts and shortest paths with no shared cells or gridlock, fluid mass conservation with lift and drag behaviour, and same-seed reproducibility.
 
 ### Determinism
 
@@ -106,7 +110,10 @@ Shortcuts are ignored while a control has focus or a modifier key is held.
 - Previews run with fewer entities, no shadows and lower grid resolution.
 - Repeated geometry is instanced (products, axles, conveyor legs, airflow streaks, smoke).
 - Products and particles are pooled.
-- Simulation code is split per simulation and loaded on demand.
+- Simulation code is split per simulation and loaded on demand; Three.js and React ship as their own long-cached chunks.
+- The render scale drops automatically when the frame rate sags and recovers when there is headroom.
+- Low-spec devices get no shadows, no multisampling and coarser simulations (for example a smaller wind tunnel grid).
+- The Nokia model is Meshopt-compressed with WebP textures (0.7 MB instead of 3.1 MB).
 
 ## Open Graph images
 
@@ -125,4 +132,4 @@ pnpm og                    # in another — writes public/og/*.png, then rebuild
 
 ## Not included yet
 
-- Audio. Simulations emit named events an audio layer could subscribe to.
+- Sound for Warehouse Robots and Wind Tunnel. The other seven simulations have procedural audio.

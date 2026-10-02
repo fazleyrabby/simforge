@@ -58,6 +58,21 @@ function routeShells(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), routeShells()],
+  build: {
+    // Three.js is most of the app and changes far less often than app code,
+    // so it gets its own long-cached chunk.
+    chunkSizeWarningLimit: 800,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'three', test: /node_modules[\\/]three[\\/]/ },
+            { name: 'react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   test: {
     include: ['src/**/*.test.ts'],
     environment: 'node',
