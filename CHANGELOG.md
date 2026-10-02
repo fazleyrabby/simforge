@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.3 — 2026-10-03
+
+### Added
+
+- **Support button** in the header and on the About page. It opens a dialog with SupportKori (Bangladesh, bKash and Nagad), Buy Me a Coffee (international), and a Payoneer customer ID with a copy button. Modelled on the support dialog in the SPOT project. Escape, the close button or a click on the backdrop closes it, and focus returns to the button.
+
+### Verified
+
+- Type check and production build pass. In the browser the dialog opens from the header, shows both links and the ID, and closes on Escape.
+
+### Not verified
+
+- The copy button, the About page button, and the dialog on a phone-sized screen.
+
 ## 0.8.2 — 2026-10-02
 
 Sound could not be heard. Three separate faults, all fixed.

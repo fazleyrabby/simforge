@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { usePageMeta } from '../app/usePageMeta'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
+import { SupportButton } from '../components/SupportButton'
 import { simulations } from '../data/simulations'
 import { site } from '../data/site'
 
@@ -71,11 +72,14 @@ export function About() {
           </p>
         </div>
 
-        {site.githubUrl && (
-          <a href={site.githubUrl} target="_blank" rel="noreferrer" className="lab-btn mt-10">
-            View source on GitHub
-          </a>
-        )}
+        <div className="mt-10 flex flex-wrap gap-3">
+          {site.githubUrl && (
+            <a href={site.githubUrl} target="_blank" rel="noreferrer" className="lab-btn">
+              View source on GitHub
+            </a>
+          )}
+          <SupportButton variant="button" />
+        </div>
       </main>
       <Footer />
     </>
