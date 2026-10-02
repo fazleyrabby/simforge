@@ -1,5 +1,67 @@
 # Changelog
 
+## 0.8.2 — 2026-10-02
+
+Sound could not be heard. Three separate faults, all fixed.
+
+### Fixed
+
+- **Far too quiet.** Soundscape layers were mixed at gains of 0.02 to 0.06 and then multiplied by a master level of 0.35, putting ambience around -40 dBFS: inaudible on laptop speakers. Everything now plays into an input stage that drives the compressor (×3.2, threshold -20 dB), with the master at 0.9. Ambience sits around -20 dBFS and loud events are still held down by the compressor.
+- **Silent after a reload with sound left on.** The preference was restored from storage, but browsers start an audio context suspended and only the toggle ever resumed it. The first pointer or key press now resumes it.
+- **Sound did not follow the simulation.** Drivers read stats by their display labels (`Motor`, `RPM`, `Speed`, `Avg Temp`, `State`, `Force`) rather than their keys (`rpm`, `speed`, `avgTemp`, `state`, `force`), so every reading fell back to a constant. The press pump also waited for states named `crushing` and `straining` that the press never reports (it reports `LOADING` and `OVERLOAD`), and the heat chime listened for an event named `cold` rather than `heat_erase`.
+
+### Added
+
+- **Warehouse Robots sound**: drive-motor hum that grows with the number of robots moving, a scanner blip per delivered order, and tones for rush orders and surges.
+- **Wind Tunnel sound**: rushing air and a fan tone that both rise with wind speed, and a two-tone warning on flow separation.
+
+### Changed
+
+- Long-running fluid tests have a 30 s timeout. One was close enough to the default 5 s to fail on a busy machine.
+
+### Verified
+
+- Type check, all 68 unit tests and the production build pass.
+- Measured in the browser with an analyser on the audio input stage: the Wind Tunnel produces a signal at about -23 dBFS RMS and the Rolling Road at about -20 dBFS, with the audio context running.
+
+### Not verified
+
+- Nobody has listened to it: levels and character were measured, not heard. The balance between simulations may need adjusting by ear.
+- The resume-on-first-gesture fix. The test browser does not suspend audio, so the faulty case could not be reproduced there.
+- Gears, Heat, Factory, Rack, Orbital and Press were not measured individually after the key fixes.
+
+## 0.8.1 — 2026-10-02
+
+Detail pass on the Wind Tunnel. The solver is unchanged.
+
+### Added
+
+- **Live instruments, all driven by the solver**:
+  - Tracer particles released at the inlet and carried through the velocity field, drawn as streaks that lengthen with air speed. New `Tracer Particles` toggle.
+  - Wool tufts taped round the model. Each lies along the air a couple of cells off the skin, and flaps when that air is slow or separated.
+  - A ten-tube manometer board under the window. Each column reads pressure at a tap above the model and rises with suction.
+  - A console monitor plotting lift and drag coefficients over the last 12 seconds.
+  - A wind speed sign on the roof, and a protractor on the back wall with a pointer that turns with the model.
+- **Tunnel hardware**: bolted flanges and stiffening ribs, a bell-mouth lip, honeycomb and mesh screens at the inlet, a smoke generator with its feed hose to the rake, an access door with hinges and latch, scale marks along the sill, a light bar, the laser that lights the slice, a pitot probe, a six-blade fan with spinner, stator vanes, motor pod and outlet guard, a drive cabinet, and an equipment cabinet with nameplate and vents under the test section.
+- **Room**: operator's console with stool and signal cable, a rack of spare models, floor markings, an extinguisher.
+- The model gains painted bands, a hub and a chord line.
+
+### Changed
+
+- The model now mounts on a shaft through the back wall instead of a strut from below.
+
+### Verified
+
+- Type check, all 68 unit tests and the production build pass.
+- In the browser the scene renders with no console errors, at about 1.9 ms per frame including the solver on an M1. Smoke, tracers, tufts, manometer columns, the graph and the sign all update.
+- Switching between all four models rebuilds the model and its tufts without errors; with the cylinder the tracers swirl in the wake and the monitor shows lift oscillating.
+
+### Not verified
+
+- The tunnel's Open Graph image still shows the earlier, plainer scene.
+- The homepage preview card with the new detail.
+- Frame cost on a phone.
+
 ## 0.8.0 — 2026-10-02
 
 Two new worlds, and a round of build and loading fixes.

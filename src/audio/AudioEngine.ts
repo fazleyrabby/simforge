@@ -10,10 +10,20 @@
 
 type Listener = (enabled: boolean) => void
 
+/**
+ * The simulation soundscapes are mixed quietly (gains of a few hundredths).
+ * They are driven up into a compressor so ambience is audible on laptop
+ * speakers while loud events, like the press exploding, stay controlled.
+ */
+const INPUT_DRIVE = 3.2
+const MASTER_LEVEL = 0.9
+
 class AudioEngine {
   private ctx: AudioContext | null = null
   private masterGain: GainNode | null = null
   private compressor: DynamicsCompressorNode | null = null
+  /** Everything plays into this. It lifts the quiet ambient layers before the compressor evens them out. */
+  private input: GainNode | null = null
   private enabled = false
   private listeners = new Set<Listener>()
 
@@ -24,6 +34,18 @@ class AudioEngine {
       this.enabled = stored === 'true'
     } catch {
       this.enabled = false
+    }
+    // Browsers start an AudioContext suspended until the user interacts with
+    // the page. With sound already switched on from a previous visit, nothing
+    // would ever resume it, so wake it on the first gesture.
+    if (typeof window !== 'undefined') {
+      const wake = () => {
+        if (!this.enabled) return
+        this.initContext()
+        if (this.ctx && this.ctx.state === 'suspended') void this.ctx.resume()
+      }
+      window.addEventListener('pointerdown', wake, { passive: true })
+      window.addEventListener('keydown', wake, { passive: true })
     }
   }
 
@@ -56,7 +78,7 @@ class AudioEngine {
         void this.ctx.resume()
       }
       if (this.masterGain && this.ctx) {
-        this.masterGain.gain.setTargetAtTime(0.35, this.ctx.currentTime, 0.05)
+        this.masterGain.gain.setTargetAtTime(MASTER_LEVEL, this.ctx.currentTime, 0.05)
       }
     } else {
       if (this.masterGain && this.ctx) {
@@ -78,7 +100,7 @@ class AudioEngine {
   getMasterInput(): AudioNode | null {
     if (!this.enabled) return null
     this.initContext()
-    return this.compressor
+    return this.input
   }
 
   private initContext(): void {
@@ -88,21 +110,24 @@ class AudioEngine {
 
     this.ctx = new AudioCtx()
     this.compressor = this.ctx.createDynamicsCompressor()
-    this.compressor.threshold.value = -12
-    this.compressor.knee.value = 20
-    this.compressor.ratio.value = 8
+    this.compressor.threshold.value = -20
+    this.compressor.knee.value = 18
+    this.compressor.ratio.value = 6
     this.compressor.attack.value = 0.003
     this.compressor.release.value = 0.15
 
     this.masterGain = this.ctx.createGain()
-    this.masterGain.gain.value = this.enabled ? 0.35 : 0
+    this.masterGain.gain.value = this.enabled ? MASTER_LEVEL : 0
 
+    this.input = this.ctx.createGain()
+    this.input.gain.value = INPUT_DRIVE
+    this.input.connect(this.compressor)
     this.compressor.connect(this.masterGain)
     this.masterGain.connect(this.ctx.destination)
   }
 
   playUiClick(tone: 'neutral' | 'subtle' | 'high' | 'heavy' = 'neutral'): void {
-    if (!this.enabled || !this.ctx || !this.compressor) return
+    if (!this.enabled || !this.ctx || !this.input) return
     const now = this.ctx.currentTime
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
@@ -116,13 +141,13 @@ class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025)
 
     osc.connect(gain)
-    gain.connect(this.compressor)
+    gain.connect(this.input)
     osc.start(now)
     osc.stop(now + 0.03)
   }
 
   playUiSliderTick(): void {
-    if (!this.enabled || !this.ctx || !this.compressor) return
+    if (!this.enabled || !this.ctx || !this.input) return
     const now = this.ctx.currentTime
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
@@ -133,13 +158,13 @@ class AudioEngine {
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008)
 
     osc.connect(gain)
-    gain.connect(this.compressor)
+    gain.connect(this.input)
     osc.start(now)
     osc.stop(now + 0.01)
   }
 
   playUiChime(): void {
-    if (!this.enabled || !this.ctx || !this.compressor) return
+    if (!this.enabled || !this.ctx || !this.input) return
     const now = this.ctx.currentTime
     const notes = [659.25, 880]
     notes.forEach((freq, i) => {
@@ -151,14 +176,14 @@ class AudioEngine {
       gain.gain.setValueAtTime(0.04, t)
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22)
       osc.connect(gain)
-      gain.connect(this.compressor!)
+      gain.connect(this.input!)
       osc.start(t)
       osc.stop(t + 0.23)
     })
   }
 
   playCardHover(): void {
-    if (!this.enabled || !this.ctx || !this.compressor) return
+    if (!this.enabled || !this.ctx || !this.input) return
     const now = this.ctx.currentTime
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
@@ -168,7 +193,7 @@ class AudioEngine {
     gain.gain.setValueAtTime(0.01, now)
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05)
     osc.connect(gain)
-    gain.connect(this.compressor)
+    gain.connect(this.input)
     osc.start(now)
     osc.stop(now + 0.055)
   }

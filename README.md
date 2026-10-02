@@ -130,6 +130,6 @@ pnpm og                    # in another — writes public/og/*.png, then rebuild
 ## Credits
 - "Nokia 3310" 3D model by [Artemecia](https://sketchfab.com/3d-models/nokia-3310-67ce77f111394e738ba1be94c146ef29) licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
-## Not included yet
+## Sound
 
-- Sound for Warehouse Robots and Wind Tunnel. The other seven simulations have procedural audio.
+Every simulation has a procedural soundscape, synthesized with the Web Audio API (no audio files). It is off by default; use the Sound toggle in the header or the viewer toolbar.

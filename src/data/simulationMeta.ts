@@ -359,6 +359,7 @@ export const simulationMeta: SimulationMeta[] = [
         default: 'smoke',
         previewDefault: 'vorticity',
       },
+      { key: 'tracers', label: 'Tracer Particles', type: 'toggle', default: true },
     ],
     stats: [
       { key: 'wind', label: 'Wind Speed', unit: 'm/s' },
@@ -373,6 +374,6 @@ export const simulationMeta: SimulationMeta[] = [
     randomizeLabel: 'Reset Flow',
     previewSeed: 3141,
     layout: 'lg:col-span-2 h-[320px] sm:h-[380px] lg:h-[440px]',
-    hint: 'Drag in the air to push it and add smoke. Hold Alt to orbit instead. The green arrow is lift, the red arrow is drag.',
+    hint: 'Drag in the air to push it and add smoke. Hold Alt to orbit instead. Green arrow is lift, red is drag. The orange tufts on the model lie along the air at its skin, and the red columns under the window rise where the air above the model is at low pressure.',
   },
 ]

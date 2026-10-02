@@ -48,7 +48,7 @@ class GearsAudio implements SimulationAudioDriver {
   }
 
   update(stats: Record<string, number | string>, dt: number): void {
-    const rawRpm = typeof stats.Motor === 'string' ? parseFloat(stats.Motor) : (stats.Motor ?? 60)
+    const rawRpm = typeof stats.rpm === 'string' ? parseFloat(stats.rpm) : (stats.rpm ?? 60)
     const rpm = isNaN(rawRpm) ? 60 : Math.abs(rawRpm)
     const targetFreq = 40 + rpm * 1.5
     this.osc.frequency.setTargetAtTime(Math.min(targetFreq, 600), this.ctx.currentTime, 0.1)
@@ -110,7 +110,7 @@ class HeatAudio implements SimulationAudioDriver {
   }
 
   update(stats: Record<string, number | string>): void {
-    const avgTemp = typeof stats['Avg Temp'] === 'string' ? parseFloat(stats['Avg Temp']) : (stats['Avg Temp'] ?? 50)
+    const avgTemp = typeof stats.avgTemp === 'string' ? parseFloat(stats.avgTemp) : (stats.avgTemp ?? 50)
     const baseFreq = 90 + (isNaN(avgTemp) ? 50 : avgTemp) * 0.8
     this.osc.frequency.setTargetAtTime(baseFreq, this.ctx.currentTime, 0.2)
   }
@@ -120,8 +120,8 @@ class HeatAudio implements SimulationAudioDriver {
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
     osc.type = 'sine'
-    osc.frequency.setValueAtTime(event.type === 'cold' ? 440 : 880, this.ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(event.type === 'cold' ? 220 : 1320, this.ctx.currentTime + 0.15)
+    osc.frequency.setValueAtTime(event.type === 'heat_erase' ? 440 : 880, this.ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(event.type === 'heat_erase' ? 220 : 1320, this.ctx.currentTime + 0.15)
     gain.gain.setValueAtTime(0.06, this.ctx.currentTime)
     gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.35)
     osc.connect(gain)
@@ -200,8 +200,8 @@ class DynoAudio implements SimulationAudioDriver {
   }
 
   update(stats: Record<string, number | string>): void {
-    const rawRpm = typeof stats.RPM === 'string' ? parseFloat(stats.RPM) : (stats.RPM ?? 1200)
-    const rawSpeed = typeof stats.Speed === 'string' ? parseFloat(stats.Speed) : (stats.Speed ?? 0)
+    const rawRpm = typeof stats.rpm === 'string' ? parseFloat(stats.rpm) : (stats.rpm ?? 1200)
+    const rawSpeed = typeof stats.speed === 'string' ? parseFloat(stats.speed) : (stats.speed ?? 0)
     const rpm = isNaN(rawRpm) ? 1200 : rawRpm
     const speed = isNaN(rawSpeed) ? 0 : rawSpeed
 
@@ -590,14 +590,15 @@ class PressAudio implements SimulationAudioDriver {
   }
 
   update(stats: Record<string, number | string>): void {
-    const state = String(stats.State ?? '').toLowerCase()
-    const rawForce = typeof stats.Force === 'string' ? parseFloat(stats.Force) : 0
-    const isWorking = state === 'descending' || state === 'crushing' || state === 'straining'
+    const state = String(stats.state ?? '').toLowerCase()
+    const rawForce = typeof stats.force === 'string' ? parseFloat(stats.force) : 0
+    const straining = state.includes('overload')
+    const isWorking = state === 'descending' || state === 'loading' || straining
 
     const targetGain = isWorking ? 0.05 + Math.min(rawForce / 500, 0.05) : 0.0
     this.pumpGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.08)
 
-    if (state === 'straining') {
+    if (straining) {
       this.pumpOsc.frequency.setTargetAtTime(110 + Math.random() * 20, this.ctx.currentTime, 0.05)
     } else {
       this.pumpOsc.frequency.setTargetAtTime(85, this.ctx.currentTime, 0.1)
@@ -720,6 +721,150 @@ class PressAudio implements SimulationAudioDriver {
   }
 }
 
+// -------------------------------------------------------------
+// 08 WAREHOUSE: Fleet motor hum, delivery blips, rush alerts
+// -------------------------------------------------------------
+class WarehouseAudio implements SimulationAudioDriver {
+  private humGain: GainNode
+  private osc: OscillatorNode
+  private filter: BiquadFilterNode
+
+  constructor(private ctx: AudioContext, private dest: AudioNode) {
+    this.humGain = ctx.createGain()
+    this.humGain.gain.value = 0.0
+    this.filter = ctx.createBiquadFilter()
+    this.filter.type = 'lowpass'
+    this.filter.frequency.value = 500
+    this.osc = ctx.createOscillator()
+    this.osc.type = 'sawtooth'
+    this.osc.frequency.value = 140
+    this.osc.connect(this.filter)
+    this.filter.connect(this.humGain)
+    this.humGain.connect(dest)
+    this.osc.start()
+  }
+
+  update(stats: Record<string, number | string>): void {
+    // "6 / 8": the hum of the drive motors grows with the number of robots on the move.
+    const busy = parseFloat(String(stats.busy ?? '0'))
+    const level = isNaN(busy) ? 0 : Math.min(busy / 8, 1.5)
+    this.humGain.gain.setTargetAtTime(0.012 + level * 0.03, this.ctx.currentTime, 0.2)
+    this.osc.frequency.setTargetAtTime(120 + level * 50, this.ctx.currentTime, 0.2)
+  }
+
+  private tone(frequency: number, at: number, length: number, level: number, type: OscillatorType = 'sine'): void {
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = type
+    osc.frequency.value = frequency
+    g.gain.setValueAtTime(level, at)
+    g.gain.exponentialRampToValueAtTime(0.0001, at + length)
+    osc.connect(g)
+    g.connect(this.dest)
+    osc.start(at)
+    osc.stop(at + length + 0.01)
+  }
+
+  handleEvent(event: SimulationEvent): void {
+    const now = this.ctx.currentTime
+    if (event.type === 'order_complete') {
+      // Scanner blip as a tote reaches a packing station.
+      this.tone(1320, now, 0.09, 0.04)
+    } else if (event.type === 'rush_order') {
+      this.tone(880, now, 0.12, 0.07, 'triangle')
+      this.tone(1175, now + 0.12, 0.16, 0.07, 'triangle')
+    } else if (event.type === 'order_surge') {
+      for (let i = 0; i < 4; i++) this.tone(660 + i * 110, now + i * 0.07, 0.1, 0.06, 'triangle')
+    }
+  }
+
+  dispose(): void {
+    try {
+      this.osc.stop()
+      this.osc.disconnect()
+      this.humGain.disconnect()
+    } catch {
+      // already stopped
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// 09 WIND TUNNEL: Rushing air, fan drone, separation warning
+// -------------------------------------------------------------
+class TunnelAudio implements SimulationAudioDriver {
+  private windGain: GainNode
+  private windFilter: BiquadFilterNode
+  private noise: AudioBufferSourceNode
+  private fanGain: GainNode
+  private fan: OscillatorNode
+
+  constructor(private ctx: AudioContext, private dest: AudioNode) {
+    this.noise = ctx.createBufferSource()
+    this.noise.buffer = createNoiseBuffer(ctx, 2)
+    this.noise.loop = true
+    this.windFilter = ctx.createBiquadFilter()
+    this.windFilter.type = 'bandpass'
+    this.windFilter.frequency.value = 500
+    this.windFilter.Q.value = 0.6
+    this.windGain = ctx.createGain()
+    this.windGain.gain.value = 0
+    this.noise.connect(this.windFilter)
+    this.windFilter.connect(this.windGain)
+    this.windGain.connect(dest)
+    this.noise.start()
+
+    this.fan = ctx.createOscillator()
+    this.fan.type = 'triangle'
+    this.fan.frequency.value = 70
+    this.fanGain = ctx.createGain()
+    this.fanGain.gain.value = 0
+    this.fan.connect(this.fanGain)
+    this.fanGain.connect(dest)
+    this.fan.start()
+  }
+
+  update(stats: Record<string, number | string>): void {
+    const wind = parseFloat(String(stats.wind ?? '0'))
+    const level = isNaN(wind) ? 0 : Math.min(wind / 40, 1)
+    // Faster air is louder and brighter; the fan's blade-pass tone climbs with it.
+    this.windGain.gain.setTargetAtTime(0.02 + level * 0.09, this.ctx.currentTime, 0.15)
+    this.windFilter.frequency.setTargetAtTime(300 + level * 1100, this.ctx.currentTime, 0.15)
+    this.fanGain.gain.setTargetAtTime(0.015 + level * 0.03, this.ctx.currentTime, 0.15)
+    this.fan.frequency.setTargetAtTime(50 + level * 110, this.ctx.currentTime, 0.15)
+  }
+
+  handleEvent(event: SimulationEvent): void {
+    if (event.type !== 'flow_separation') return
+    // Stall warning: two falling tones.
+    for (const [offset, frequency] of [[0, 740], [0.18, 520]]) {
+      const osc = this.ctx.createOscillator()
+      const g = this.ctx.createGain()
+      osc.type = 'square'
+      osc.frequency.value = frequency
+      g.gain.setValueAtTime(0.04, this.ctx.currentTime + offset)
+      g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + offset + 0.16)
+      osc.connect(g)
+      g.connect(this.dest)
+      osc.start(this.ctx.currentTime + offset)
+      osc.stop(this.ctx.currentTime + offset + 0.17)
+    }
+  }
+
+  dispose(): void {
+    try {
+      this.noise.stop()
+      this.fan.stop()
+      this.noise.disconnect()
+      this.fan.disconnect()
+      this.windGain.disconnect()
+      this.fanGain.disconnect()
+    } catch {
+      // already stopped
+    }
+  }
+}
+
 /**
  * Creates and attaches an audio driver for the given simulation ID.
  */
@@ -743,6 +888,10 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new OrbitalAudio(ctx, dest)
     case 'press':
       return new PressAudio(ctx, dest)
+    case 'warehouse':
+      return new WarehouseAudio(ctx, dest)
+    case 'tunnel':
+      return new TunnelAudio(ctx, dest)
     default:
       return null
   }

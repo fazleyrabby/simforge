@@ -38,7 +38,7 @@ describe('FluidGrid', () => {
     }
     // Under a tenth of a percent of the wind speed.
     expect(worst).toBeLessThan(WIND * 0.001)
-  })
+  }, 30000)
 
   it('lets no air through the body', () => {
     const grid = make('airfoil', 10)
@@ -66,7 +66,7 @@ describe('FluidGrid', () => {
       expect(Math.abs(grid.centerV[i])).toBeLessThan(WIND * 0.03)
     }
     expect(grid.drag).toBe(0)
-  })
+  }, 30000)
 
   it('speeds the air up as it squeezes past a body', () => {
     const grid = make('cylinder')
@@ -107,7 +107,7 @@ describe('FluidGrid', () => {
       if (i % grid.width > grid.width * 0.8) downstream += grid.smoke[i]
     }
     expect(downstream).toBeGreaterThan(5)
-  })
+  }, 30000)
 
   it('draws outlines the solver and the renderer can share', () => {
     for (const kind of ['airfoil', 'cylinder', 'plate', 'wedge'] as ShapeKind[]) {
@@ -128,5 +128,5 @@ describe('FluidGrid', () => {
     }
     expect(snapshot(3)).toEqual(snapshot(3))
     expect(snapshot(3)).not.toEqual(snapshot(4))
-  })
+  }, 30000)
 })
