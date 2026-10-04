@@ -868,6 +868,37 @@ class TunnelAudio implements SimulationAudioDriver {
 /**
  * Creates and attaches an audio driver for the given simulation ID.
  */
+class SeismicAudio implements SimulationAudioDriver {
+  private osc: OscillatorNode
+  private gain: GainNode
+
+  constructor(private ctx: AudioContext, dest: AudioNode) {
+    this.osc = ctx.createOscillator()
+    this.osc.type = 'triangle'
+    this.osc.frequency.value = 48
+    this.gain = ctx.createGain()
+    this.gain.gain.value = 0
+    this.osc.connect(this.gain)
+    this.gain.connect(dest)
+    this.osc.start()
+  }
+
+  update(stats: Record<string, number | string>): void {
+    const sway = Math.abs(parseFloat(String(stats.roof ?? '0')))
+    const level = Math.min(sway / 100, 1)
+    this.gain.gain.setTargetAtTime(0.012 + level * 0.025, this.ctx.currentTime, 0.16)
+    this.osc.frequency.setTargetAtTime(45 + level * 38, this.ctx.currentTime, 0.16)
+  }
+
+  handleEvent(): void {}
+
+  dispose(): void {
+    this.osc.stop()
+    this.osc.disconnect()
+    this.gain.disconnect()
+  }
+}
+
 export function createSimulationAudioDriver(simId: string): SimulationAudioDriver | null {
   const ctx = audioEngine.getContext()
   const dest = audioEngine.getMasterInput()
@@ -892,6 +923,8 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new WarehouseAudio(ctx, dest)
     case 'tunnel':
       return new TunnelAudio(ctx, dest)
+    case 'seismic':
+      return new SeismicAudio(ctx, dest)
     default:
       return null
   }

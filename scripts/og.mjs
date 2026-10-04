@@ -22,6 +22,7 @@ const shots = [
   { file: 'press', path: '/simulations/press?seed=42', warm: 4000 },
   { file: 'warehouse', path: '/simulations/warehouse?seed=5150', warm: 9000 },
   { file: 'tunnel', path: '/simulations/tunnel?seed=3141', warm: 9000 },
+  { file: 'seismic', path: '/simulations/seismic?seed=2034', warm: 5000 },
 ]
 
 const browser = await chromium.launch({

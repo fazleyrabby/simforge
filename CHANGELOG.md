@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased — 2026-10-04
+
+### Added
+
+- **Seismic Shake Table (10):** a three-storey shear building on a moving platform, with an optional tuned roof mass. Controls change shaking frequency, table stroke, structural damping and damper tuning; the viewer reports roof displacement, peak sway and acceleration.
+- The test rig now shows moving braces, springs, dashpots, a driven actuator and per-floor drift sensors. A bench scope plots table and roof motion; the stats also report peak storey drift, frequency ratio and damper travel.
+- A standalone fixed-step structural model and tests for resonance, damper effect, no-input equilibrium and reset reproducibility.
+- A procedural soundscape, route share image and updated ten-simulation cover.
+
+### Verified
+
+- Type check and production build pass; all 72 unit tests pass. The new route renders at desktop and phone sizes in headless Chromium without page errors, and the damper switch updates its state.
+
 ## 0.8.4 — 2026-10-03
 
 ### Added

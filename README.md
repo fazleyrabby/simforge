@@ -17,6 +17,7 @@ A collection of miniature real-time 3D simulations built directly on Three.js. T
 | 07 | **Hydraulic Press** | A hydraulic ram descends on test subjects with up to 500 tons. Realistic material physics govern plastic buckling (soda can), elastic rebound (rubber ball), brittle fracture (glass cube), dense yield (tungsten cube), and catastrophic structural failure when the press stalls against the invincible Nokia 3310. |
 | 08 | **Warehouse Robots** | A robot fleet filling orders on a seeded warehouse floor. Aisles are one-way, so traffic circulates and robots never meet head on. A dispatcher gives each order to the nearest free robot, which plans a shortest route with A*, loads a tote and carries it to the least busy packing station. Each floor cell is reserved by one robot at a time; a robot stuck in a queue replans around it. Batteries drain with distance and robots return to their docks to charge. |
 | 09 | **Wind Tunnel** | A slice of incompressible air solved with the stable-fluids method on a staggered (MAC) grid: velocity is advected along itself, then projected so the flow through every cell balances. A solid model sits in the flow, smoke lines make it visible, and pressure on the model's surface gives lift and drag coefficients. The solver and the renderer share one outline, so the solid in the air is exactly the model on screen. |
+| 10 | **Seismic Shake Table** | A three-storey shear building driven by a moving test platform. Coupled springs and damping create resonance near the natural frequency; an optional tuned roof mass absorbs energy and reduces sway. Moving braces, an actuator, drift sensors and a two-channel scope make the response visible. |
 
 ## Run it
 
@@ -47,7 +48,7 @@ src/
   pages/          home, index, simulation, about, not found
   simulations/
     core/         Simulation interface, BaseSimulation, seeded RNG, registry types
-    gears/ heat/ dyno/ factory/ rack/ orbital/ press/
+    gears/ heat/ dyno/ factory/ rack/ orbital/ press/ warehouse/ tunnel/ seismic/
   three/          Stage (renderer + loop), cameras, lights, environment, disposal
 ```
 
@@ -78,7 +79,7 @@ Simulations never create a renderer or a loop. `BaseSimulation` supplies the sha
 
 ### Logic is separate from rendering
 
-Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`, `PressLogic`, `WarehouseLogic`, `FluidGrid`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, material stress responses, overload limits, one-way layouts and shortest paths with no shared cells or gridlock, fluid mass conservation with lift and drag behaviour, and same-seed reproducibility.
+Each simulation's rules live in a plain class with no WebGL dependency (`GearGenerator`, `HeatGrid`, `DynoLogic`, `FactoryLogic`, `RackLogic`, `OrbitalSystem`, `PressLogic`, `WarehouseLogic`, `FluidGrid`, `ShakeTableModel`). That is what the unit tests exercise: gear ratios and tooth interlock, heat conservation and symmetry, drivetrain steady state and slip limits, product lifecycle and backpressure, scheduler power caps and thermal throttling, Keplerian orbits with conserved energy and angular momentum, material stress responses, overload limits, one-way layouts and shortest paths with no shared cells or gridlock, fluid mass conservation with lift and drag behaviour, resonance and damper response, and same-seed reproducibility.
 
 ### Determinism
 
