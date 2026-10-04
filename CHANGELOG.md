@@ -4,14 +4,17 @@
 
 ### Added
 
+- **Magnetic Levitation Bench (11):** a steel sphere held beneath a copper electromagnet by a feedback controller. Users can set the gap, tune the controller, adjust ball mass, switch to manual coil current, and tap the ball to test recovery. The rig includes a laser height scale, schematic field paths, a safety catch and a live controller scope.
+- A standalone fixed-step magnetic model with tests for stable feedback, manual fall, disturbance recovery and changed setpoint.
+- A procedural coil soundscape and per-route share image.
 - **Seismic Shake Table (10):** a three-storey shear building on a moving platform, with an optional tuned roof mass. Controls change shaking frequency, table stroke, structural damping and damper tuning; the viewer reports roof displacement, peak sway and acceleration.
 - The test rig now shows moving braces, springs, dashpots, a driven actuator and per-floor drift sensors. A bench scope plots table and roof motion; the stats also report peak storey drift, frequency ratio and damper travel.
 - A standalone fixed-step structural model and tests for resonance, damper effect, no-input equilibrium and reset reproducibility.
-- A procedural soundscape, route share image and updated ten-simulation cover.
+- A procedural soundscape, route share image and updated eleven-simulation cover.
 
 ### Verified
 
-- Type check and production build pass; all 72 unit tests pass. The new route renders at desktop and phone sizes in headless Chromium without page errors, and the damper switch updates its state.
+- Type check and production build pass; all 76 unit tests pass. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
 
 ## 0.8.4 — 2026-10-03
 

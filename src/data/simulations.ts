@@ -13,6 +13,7 @@ const loaders: Record<string, SimulationDefinition['load']> = {
   warehouse: () => import('../simulations/warehouse/WarehouseSimulation'),
   tunnel: () => import('../simulations/tunnel/TunnelSimulation'),
   seismic: () => import('../simulations/seismic/SeismicSimulation'),
+  maglev: () => import('../simulations/maglev/MaglevSimulation'),
 }
 
 /**

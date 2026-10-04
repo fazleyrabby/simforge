@@ -899,6 +899,56 @@ class SeismicAudio implements SimulationAudioDriver {
   }
 }
 
+class MaglevAudio implements SimulationAudioDriver {
+  private osc: OscillatorNode
+  private gain: GainNode
+  private filter: BiquadFilterNode
+
+  constructor(private ctx: AudioContext, dest: AudioNode) {
+    this.osc = ctx.createOscillator()
+    this.osc.type = 'sawtooth'
+    this.osc.frequency.value = 90
+    this.filter = ctx.createBiquadFilter()
+    this.filter.type = 'lowpass'
+    this.filter.frequency.value = 230
+    this.gain = ctx.createGain()
+    this.gain.gain.value = 0
+    this.osc.connect(this.filter)
+    this.filter.connect(this.gain)
+    this.gain.connect(dest)
+    this.osc.start()
+  }
+
+  update(stats: Record<string, number | string>): void {
+    const current = Math.max(0, Math.min(4.5, parseFloat(String(stats.current ?? '0')) || 0))
+    this.osc.frequency.setTargetAtTime(66 + current * 20, this.ctx.currentTime, 0.08)
+    this.filter.frequency.setTargetAtTime(160 + current * 85, this.ctx.currentTime, 0.1)
+    this.gain.gain.setTargetAtTime(current * 0.007, this.ctx.currentTime, 0.1)
+  }
+
+  handleEvent(event: SimulationEvent): void {
+    if (event.type !== 'ball_caught') return
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(210, this.ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.18)
+    gain.gain.setValueAtTime(0.08, this.ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.2)
+    osc.connect(gain)
+    gain.connect(this.gain)
+    osc.start()
+    osc.stop(this.ctx.currentTime + 0.21)
+  }
+
+  dispose(): void {
+    this.osc.stop()
+    this.osc.disconnect()
+    this.filter.disconnect()
+    this.gain.disconnect()
+  }
+}
+
 export function createSimulationAudioDriver(simId: string): SimulationAudioDriver | null {
   const ctx = audioEngine.getContext()
   const dest = audioEngine.getMasterInput()
@@ -925,6 +975,8 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new TunnelAudio(ctx, dest)
     case 'seismic':
       return new SeismicAudio(ctx, dest)
+    case 'maglev':
+      return new MaglevAudio(ctx, dest)
     default:
       return null
   }
