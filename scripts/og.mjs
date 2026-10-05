@@ -24,6 +24,7 @@ const shots = [
   { file: 'tunnel', path: '/simulations/tunnel?seed=3141', warm: 9000 },
   { file: 'seismic', path: '/simulations/seismic?seed=2034', warm: 5000 },
   { file: 'maglev', path: '/simulations/maglev?seed=12011', warm: 5000 },
+  { file: 'arm', path: '/simulations/arm?seed=6404', warm: 9000 },
 ]
 
 const browser = await chromium.launch({

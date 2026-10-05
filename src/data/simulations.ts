@@ -14,6 +14,7 @@ const loaders: Record<string, SimulationDefinition['load']> = {
   tunnel: () => import('../simulations/tunnel/TunnelSimulation'),
   seismic: () => import('../simulations/seismic/SeismicSimulation'),
   maglev: () => import('../simulations/maglev/MaglevSimulation'),
+  arm: () => import('../simulations/arm/ArmSimulation'),
 }
 
 /**

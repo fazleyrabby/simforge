@@ -865,6 +865,79 @@ class TunnelAudio implements SimulationAudioDriver {
   }
 }
 
+// -------------------------------------------------------------
+// 12 ROBOT ARM: Servo whine, gripper clicks, pallet chime
+// -------------------------------------------------------------
+class ArmAudio implements SimulationAudioDriver {
+  private gain: GainNode
+  private osc: OscillatorNode
+  private filter: BiquadFilterNode
+
+  constructor(private ctx: AudioContext, private dest: AudioNode) {
+    this.gain = ctx.createGain()
+    this.gain.gain.value = 0
+    this.filter = ctx.createBiquadFilter()
+    this.filter.type = 'bandpass'
+    this.filter.frequency.value = 600
+    this.filter.Q.value = 2
+    this.osc = ctx.createOscillator()
+    this.osc.type = 'sawtooth'
+    this.osc.frequency.value = 180
+    this.osc.connect(this.filter)
+    this.filter.connect(this.gain)
+    this.gain.connect(dest)
+    this.osc.start()
+  }
+
+  update(stats: Record<string, number | string>): void {
+    // "Joint Speed" as a percentage of the limit: the servos whine higher and louder the faster they turn.
+    const effort = Math.min(parseFloat(String(stats.effort ?? '0')) / 100, 1.2)
+    const level = isNaN(effort) ? 0 : effort
+    this.gain.gain.setTargetAtTime(level * 0.05, this.ctx.currentTime, 0.04)
+    this.osc.frequency.setTargetAtTime(140 + level * 520, this.ctx.currentTime, 0.04)
+    this.filter.frequency.setTargetAtTime(400 + level * 1400, this.ctx.currentTime, 0.04)
+  }
+
+  private tone(frequency: number, at: number, length: number, level: number, type: OscillatorType): void {
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = type
+    osc.frequency.value = frequency
+    g.gain.setValueAtTime(level, at)
+    g.gain.exponentialRampToValueAtTime(0.0001, at + length)
+    osc.connect(g)
+    g.connect(this.dest)
+    osc.start(at)
+    osc.stop(at + length + 0.01)
+  }
+
+  handleEvent(event: SimulationEvent): void {
+    const now = this.ctx.currentTime
+    if (event.type === 'grip_close') {
+      // Pneumatic jaws snapping shut.
+      this.tone(2100, now, 0.03, 0.06, 'square')
+      this.tone(320, now + 0.02, 0.06, 0.05, 'triangle')
+    } else if (event.type === 'grip_open') {
+      this.tone(1500, now, 0.03, 0.045, 'square')
+    } else if (event.type === 'pallet_full') {
+      this.tone(784, now, 0.14, 0.07, 'sine')
+      this.tone(1047, now + 0.12, 0.2, 0.07, 'sine')
+    } else if (event.type === 'out_of_reach') {
+      this.tone(220, now, 0.18, 0.07, 'square')
+    }
+  }
+
+  dispose(): void {
+    try {
+      this.osc.stop()
+      this.osc.disconnect()
+      this.gain.disconnect()
+    } catch {
+      // already stopped
+    }
+  }
+}
+
 /**
  * Creates and attaches an audio driver for the given simulation ID.
  */
@@ -977,6 +1050,8 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new SeismicAudio(ctx, dest)
     case 'maglev':
       return new MaglevAudio(ctx, dest)
+    case 'arm':
+      return new ArmAudio(ctx, dest)
     default:
       return null
   }

@@ -4,6 +4,11 @@
 
 ### Added
 
+- **Robot Arm (12):** a four-axis pick-and-place arm in a fenced work cell. Parts arrive on a conveyor and stop at a gate; the arm picks each one and stacks it on the pallet of its colour, and a full pallet of twelve is swapped for an empty one. Analytic inverse kinematics gives the joint angles for any target (base turn, a two-link solve by the law of cosines with the elbow up, and a wrist that keeps the tool vertical). Travel between stations is a joint-space move; approach and retract are straight Cartesian lines; every move uses quintic easing, timed so no joint exceeds its speed or acceleration limit.
+  - Manual mode: drag the target ring across the cell, set its height with a slider, and use `Toggle Gripper` to pick up and set down parts. Out-of-reach targets are flagged and the arm stretches toward them. Parts put on the wrong pallet are counted as mis-sorted.
+  - The cell shows the tip's trace, the reach envelope, a gate sensor, pallet lamps, a stack light and a controller screen with live joint positions.
+- A standalone fixed-step arm model with 15 tests: kinematics round trips, tool orientation, unreachable points, joint speed limits, colour sorting, part conservation, straight-line picks, speed scaling, belt spacing, manual following and hand placement, and same-seed reproducibility.
+- A procedural servo and gripper soundscape and a per-route share image for the arm; the cover now shows twelve simulations.
 - **Magnetic Levitation Bench (11):** a steel sphere held beneath a copper electromagnet by a feedback controller. Users can set the gap, tune the controller, adjust ball mass, switch to manual coil current, and tap the ball to test recovery. The rig includes a laser height scale, schematic field paths, a safety catch and a live controller scope.
 - A standalone fixed-step magnetic model with tests for stable feedback, manual fall, disturbance recovery and changed setpoint.
 - A procedural coil soundscape and per-route share image.
@@ -14,7 +19,11 @@
 
 ### Verified
 
-- Type check and production build pass; all 76 unit tests pass. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
+- Type check and production build pass; all 91 unit tests pass. In the browser the Robot Arm runs its automatic cycle with parts landing on the correct pallets, and in manual mode the gripper tip reaches the dragged target. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
+
+### Not verified
+
+- Robot Arm: the gripper toggle and hand placement were unit-tested but not exercised in the browser; sound was not listened to; frame cost on a phone.
 
 ## 0.8.4 — 2026-10-03
 
