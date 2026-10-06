@@ -14,6 +14,7 @@ const techniques = [
   ['Fluid dynamics', 'Incompressible air flow on a staggered grid, with lift and drag read from surface pressure.'],
   ['Robotics', 'Analytic inverse kinematics, with joint-space and straight-line moves eased inside joint limits.'],
   ['Rigid bodies', 'A 2D constraint solver (Planck.js) with pulley, prismatic and revolute joints driving a chain reaction.'],
+  ['Puzzles', 'A cube solver for any size: parity fixes, then commutator three-cycles found by breadth-first search.'],
   ['Pathfinding', 'A* over one-way aisles, with cell reservation so a robot fleet queues instead of colliding.'],
   ['Shaders', 'The heat field is displaced and colored on the GPU from one float texture.'],
   ['Animation', 'Fixed 60 Hz simulation steps with interpolated rendering.'],

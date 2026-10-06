@@ -1076,6 +1076,48 @@ class MachineAudio implements SimulationAudioDriver {
   dispose(): void {}
 }
 
+class CubeAudio implements SimulationAudioDriver {
+  private owed = 0
+
+  constructor(private ctx: AudioContext, private dest: AudioNode) {}
+
+  update(stats: Record<string, number | string>, dt: number): void {
+    // One click per turn, up to as many as the ear can separate; past that it is a buzz anyway.
+    const rate = Math.min(parseFloat(String(stats.rate ?? '0')) || 0, 24)
+    if (rate === 0) {
+      this.owed = 0
+      return
+    }
+    this.owed += rate * dt
+    if (this.owed < 1) return
+    this.owed -= Math.floor(this.owed)
+    const now = this.ctx.currentTime
+    this.tone(1500 + rate * 20, now, 0.018, 0.035, 'square')
+    this.tone(240, now, 0.05, 0.05, 'triangle')
+  }
+
+  private tone(frequency: number, at: number, length: number, level: number, type: OscillatorType): void {
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = type
+    osc.frequency.value = frequency
+    g.gain.setValueAtTime(level, at)
+    g.gain.exponentialRampToValueAtTime(0.0001, at + length)
+    osc.connect(g)
+    g.connect(this.dest)
+    osc.start(at)
+    osc.stop(at + length + 0.01)
+  }
+
+  handleEvent(event: SimulationEvent): void {
+    if (event.type !== 'cube_solved') return
+    const now = this.ctx.currentTime
+    ;[523, 659, 784, 1047].forEach((frequency, i) => this.tone(frequency, now + i * 0.08, 0.25, 0.07, 'sine'))
+  }
+
+  dispose(): void {}
+}
+
 export function createSimulationAudioDriver(simId: string): SimulationAudioDriver | null {
   const ctx = audioEngine.getContext()
   const dest = audioEngine.getMasterInput()
@@ -1108,6 +1150,8 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new ArmAudio(ctx, dest)
     case 'machine':
       return new MachineAudio(ctx, dest)
+    case 'cube':
+      return new CubeAudio(ctx, dest)
     default:
       return null
   }

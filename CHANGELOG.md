@@ -1,9 +1,14 @@
 # Changelog
 
-## Unreleased — 2026-10-05
+## Unreleased — 2026-10-06
 
 ### Added
 
+- **Cube Solver (14):** a rig with a spindle on each of the six faces scrambles and solves a twisty cube, for any size from 2×2×2 to 7×7×7. The solver works from the sticker colours alone. It first fixes the parity of each kind of piece with single turns, then places pieces three at a time with commutators, sequences that cycle three pieces and disturb nothing else. One base commutator is found per kind of piece, and a breadth-first search gives the shortest setup that carries any three pieces onto it. Centres are solved first, then edges, then corners. A 3×3×3 takes about 160 turns and a 7×7×7 about 1,300.
+  - Controls: cube size, speed from 1 to 60 turns a second, and auto run. `Scramble` and `Solve` work by hand. Dragging across a face turns that layer, and the rig solves from wherever the cube is left.
+  - Each spindle ends in a four-fingered hand. The hand nearest the turning layer moves in against the face, closes its fingers on the cube, lengthens them to reach an inner layer, and turns with it; the others stand open around the cube. A lit band marks the layer, and four lamps follow the phases of the solve.
+- A standalone cube model and solver with 13 tests: turns that return to the start, colour counts, layer isolation, solves for every size from 2 to 7, near-solved cases, phase order, no repeated layer, reproducibility, and the scramble–solve sequencer including hand turns and speed.
+- A per-turn click and a solved chime for the cube, and its share image; the cover now shows fourteen simulations. Chain Reaction's homepage card is narrower so the two share a row.
 - **Chain Reaction (13):** a twelve-link Rube Goldberg machine on a pegboard. A latch releases a marble down a ramp into a row of dominoes; the last and heaviest tips off the shelf into a bucket; the bucket sinks and its rope, run over two pulleys, lifts a gate; the ball behind the gate rolls down through a paddle wheel and a hanging flap and strikes a hammer. The hammer knocks a second ball off its tee and down a ramp into a second domino row; the last of those drops into a second bucket, whose rope is geared so a short drop hoists a striker two metres into a bell. The spent ball falls through a field of pegs and rolls away down a sloping floor. Every piece is a rigid body in Planck.js (a Box2D port, new dependency) with prismatic, pulley and revolute joints. Nothing is scripted: links are detected from contacts and positions.
   - Controls: launch ramp angle, domino spacing, marble mass, gate weight and gravity. Pushed far enough, each breaks a particular link and the machine reports where it stalled. Any loose piece can be dragged with the pointer. The machine resets and reruns by itself; `Run Machine` starts it by hand and `New Layout` changes the domino rows.
   - Twelve lamps on the board track the links; the bell flashes and throws confetti when the chain completes. Stats show links fired, run time, completed runs and best time.
@@ -28,10 +33,11 @@
 
 ### Verified
 
-- Type check and production build pass; all 102 unit tests pass. Chain Reaction completes all twelve links for 40 of 40 seeds at default settings in the headless model, and in the browser a full run finished in 16.7 s and restarted itself; dragging the hammer with the pointer works. In the browser the Robot Arm runs its automatic cycle with parts landing on the correct pallets, and in manual mode the gripper tip reaches the dragged target. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
+- Type check and production build pass; all 115 unit tests pass. Cube Solver solved a 3×3×3 and a 7×7×7 at 60 turns a second in the browser, and a drag across a face turned the expected layer. Chain Reaction completes all twelve links for 40 of 40 seeds at default settings in the headless model, and in the browser a full run finished in 16.7 s and restarted itself; dragging the hammer with the pointer works. In the browser the Robot Arm runs its automatic cycle with parts landing on the correct pallets, and in manual mode the gripper tip reaches the dragged target. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
 
 ### Not verified
 
+- Cube Solver: sound was not listened to; touch dragging and frame cost on a phone were not tested; sizes 4 to 6 were solved in the model but not watched in the browser.
 - Chain Reaction: sound was not listened to; touch dragging and frame cost on a phone were not tested; a stalled run was checked in the model but not watched in the browser. Marble mass near its maximum can stall the first domino row for some layouts.
 - Robot Arm: the gripper toggle and hand placement were unit-tested but not exercised in the browser; sound was not listened to; frame cost on a phone.
 

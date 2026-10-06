@@ -46,7 +46,7 @@ try {
   const homeBaseline = await getStats()
   console.log('Home baseline:', homeBaseline)
 
-  const sims = ['gears', 'heat', 'dyno', 'factory', 'rack', 'orbital', 'press', 'warehouse', 'tunnel', 'seismic', 'maglev', 'arm', 'machine']
+  const sims = ['gears', 'heat', 'dyno', 'factory', 'rack', 'orbital', 'press', 'warehouse', 'tunnel', 'seismic', 'maglev', 'arm', 'machine', 'cube']
   
   for (let cycle = 1; cycle <= 2; cycle++) {
     console.log(`\n--- Cycle ${cycle} ---`)
