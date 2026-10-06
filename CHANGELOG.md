@@ -1,9 +1,14 @@
 # Changelog
 
-## Unreleased — 2026-10-04
+## Unreleased — 2026-10-05
 
 ### Added
 
+- **Chain Reaction (13):** a twelve-link Rube Goldberg machine on a pegboard. A latch releases a marble down a ramp into a row of dominoes; the last and heaviest tips off the shelf into a bucket; the bucket sinks and its rope, run over two pulleys, lifts a gate; the ball behind the gate rolls down through a paddle wheel and a hanging flap and strikes a hammer. The hammer knocks a second ball off its tee and down a ramp into a second domino row; the last of those drops into a second bucket, whose rope is geared so a short drop hoists a striker two metres into a bell. The spent ball falls through a field of pegs and rolls away down a sloping floor. Every piece is a rigid body in Planck.js (a Box2D port, new dependency) with prismatic, pulley and revolute joints. Nothing is scripted: links are detected from contacts and positions.
+  - Controls: launch ramp angle, domino spacing, marble mass, gate weight and gravity. Pushed far enough, each breaks a particular link and the machine reports where it stalled. Any loose piece can be dragged with the pointer. The machine resets and reruns by itself; `Run Machine` starts it by hand and `New Layout` changes the domino rows.
+  - Twelve lamps on the board track the links; the bell flashes and throws confetti when the chain completes. Stats show links fired, run time, completed runs and best time.
+- A standalone machine model with 11 tests: the full chain in order for 20 seeds, stillness before release, the gate staying shut until the bucket is loaded, rope length, the striker staying down until the second bucket is loaded, a stall at the expected link for four mis-set controls, dragging, and same-seed reproducibility.
+- Collision clacks, a bell and a stall tone for the machine, and a per-route share image; the cover now shows thirteen simulations.
 - **Robot Arm (12):** a four-axis pick-and-place arm in a fenced work cell. Parts arrive on a conveyor and stop at a gate; the arm picks each one and stacks it on the pallet of its colour, and a full pallet of twelve is swapped for an empty one. Analytic inverse kinematics gives the joint angles for any target (base turn, a two-link solve by the law of cosines with the elbow up, and a wrist that keeps the tool vertical). Travel between stations is a joint-space move; approach and retract are straight Cartesian lines; every move uses quintic easing, timed so no joint exceeds its speed or acceleration limit.
   - Manual mode: drag the target ring across the cell, set its height with a slider, and use `Toggle Gripper` to pick up and set down parts. Out-of-reach targets are flagged and the arm stretches toward them. Parts put on the wrong pallet are counted as mis-sorted.
   - The cell shows the tip's trace, the reach envelope, a gate sensor, pallet lamps, a stack light and a controller screen with live joint positions.
@@ -17,12 +22,17 @@
 - A standalone fixed-step structural model and tests for resonance, damper effect, no-input equilibrium and reset reproducibility.
 - A procedural soundscape, route share image and updated eleven-simulation cover.
 
+### Fixed
+
+- Share cards on X showed no picture: the image URL in the page tags was relative unless `SITE_URL` was set. The build now falls back to the Vercel production domain, and the homepage gets the absolute URL as well as the per-simulation pages.
+
 ### Verified
 
-- Type check and production build pass; all 91 unit tests pass. In the browser the Robot Arm runs its automatic cycle with parts landing on the correct pallets, and in manual mode the gripper tip reaches the dragged target. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
+- Type check and production build pass; all 102 unit tests pass. Chain Reaction completes all twelve links for 40 of 40 seeds at default settings in the headless model, and in the browser a full run finished in 16.7 s and restarted itself; dragging the hammer with the pointer works. In the browser the Robot Arm runs its automatic cycle with parts landing on the correct pallets, and in manual mode the gripper tip reaches the dragged target. The new routes render at desktop and phone sizes in headless Chromium without page errors. Manual maglev control reaches the safety catch, and switching back to feedback resumes correction.
 
 ### Not verified
 
+- Chain Reaction: sound was not listened to; touch dragging and frame cost on a phone were not tested; a stalled run was checked in the model but not watched in the browser. Marble mass near its maximum can stall the first domino row for some layouts.
 - Robot Arm: the gripper toggle and hand placement were unit-tested but not exercised in the browser; sound was not listened to; frame cost on a phone.
 
 ## 0.8.4 — 2026-10-03

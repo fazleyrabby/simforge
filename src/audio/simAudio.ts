@@ -1022,6 +1022,60 @@ class MaglevAudio implements SimulationAudioDriver {
   }
 }
 
+class MachineAudio implements SimulationAudioDriver {
+  private last = 0
+  private quiet = 0
+
+  constructor(private ctx: AudioContext, private dest: AudioNode) {}
+
+  update(stats: Record<string, number | string>, dt: number): void {
+    // "Impact" is the hardest knock of the last few frames; a jump in it is a fresh collision.
+    const impact = parseFloat(String(stats.impact ?? '0')) || 0
+    this.quiet -= dt
+    if (impact > this.last + 0.25 && this.quiet <= 0) {
+      const strength = Math.min(impact / 6, 1)
+      const now = this.ctx.currentTime
+      // Wooden clack: a short pitched knock, lower and louder the harder the hit.
+      this.tone(520 - strength * 260, now, 0.05 + strength * 0.05, 0.03 + strength * 0.07, 'triangle')
+      this.tone(1900 - strength * 700, now, 0.02, 0.02 + strength * 0.03, 'square')
+      this.quiet = 0.05
+    }
+    this.last = impact
+  }
+
+  private tone(frequency: number, at: number, length: number, level: number, type: OscillatorType): void {
+    const osc = this.ctx.createOscillator()
+    const g = this.ctx.createGain()
+    osc.type = type
+    osc.frequency.value = frequency
+    g.gain.setValueAtTime(level, at)
+    g.gain.exponentialRampToValueAtTime(0.0001, at + length)
+    osc.connect(g)
+    g.connect(this.dest)
+    osc.start(at)
+    osc.stop(at + length + 0.01)
+  }
+
+  handleEvent(event: SimulationEvent): void {
+    const now = this.ctx.currentTime
+    if (event.type === 'machine_release') {
+      this.tone(1400, now, 0.04, 0.05, 'square')
+    } else if (event.type === 'machine_stage') {
+      this.tone(880, now, 0.09, 0.035, 'sine')
+    } else if (event.type === 'machine_complete') {
+      // Bell: a struck fundamental with inharmonic partials ringing out.
+      for (const [ratio, level, length] of [[1, 0.11, 1.8], [2.76, 0.06, 1.1], [5.4, 0.035, 0.6], [8.93, 0.02, 0.35]]) {
+        this.tone(620 * ratio, now, length, level, 'sine')
+      }
+    } else if (event.type === 'machine_stalled') {
+      this.tone(196, now, 0.22, 0.06, 'square')
+      this.tone(147, now + 0.2, 0.3, 0.06, 'square')
+    }
+  }
+
+  dispose(): void {}
+}
+
 export function createSimulationAudioDriver(simId: string): SimulationAudioDriver | null {
   const ctx = audioEngine.getContext()
   const dest = audioEngine.getMasterInput()
@@ -1052,6 +1106,8 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new MaglevAudio(ctx, dest)
     case 'arm':
       return new ArmAudio(ctx, dest)
+    case 'machine':
+      return new MachineAudio(ctx, dest)
     default:
       return null
   }

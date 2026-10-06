@@ -65,7 +65,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
   .tile { position: relative; border: 1px solid #242b34; overflow: hidden; background: #0a0c0f; }
   .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .tile::before { content: ""; position: absolute; top: -1px; left: -1px; width: 9px; height: 9px; border-top: 1px solid #7a8591; border-left: 1px solid #7a8591; z-index: 2; }
-  ${tiles.length % columns === 0 ? '.none' : tiles.length % columns === 2 ? '.tile:nth-last-child(2), .tile:last-child' : '.tile:last-child'} { grid-column: span 2; }
+  ${tiles.length % columns === 0 ? '.none' : tiles.length % columns === 2 ? '.tile:nth-last-child(2), .tile:last-child' : '.tile:last-child'} { grid-column: span ${tiles.length % columns === 1 ? columns : 2}; }
   .tag { position: absolute; left: 9px; top: 8px; font: 500 10px "IBM Plex Mono", monospace; letter-spacing: 0.16em; text-transform: uppercase; color: #eef2f6; text-shadow: 0 0 6px #0a0c0f, 0 0 6px #0a0c0f; }
   .tag b { color: #ffb020; font-weight: 500; margin-right: 7px; }
 </style></head><body>

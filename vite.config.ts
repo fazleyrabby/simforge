@@ -19,9 +19,11 @@ function routeShells(): Plugin {
     closeBundle() {
       const dist = join(import.meta.dirname, 'dist')
       const template = readFileSync(join(dist, 'index.html'), 'utf8')
-      // Absolute base for og:image when deploying (unfurlers prefer absolute
-      // URLs); falls back to root-relative paths when unset.
-      const base = (process.env.SITE_URL ?? '').replace(/\/$/, '')
+      // Absolute base for og:image. X ignores a relative image URL and shows
+      // the card without a picture. SITE_URL wins; on Vercel the production
+      // domain is used; otherwise paths stay root-relative.
+      const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      const base = (process.env.SITE_URL ?? (vercel ? `https://${vercel}` : '')).replace(/\/$/, '')
       const routes = [
         { path: 'simulations', title: 'Simulations', description: site.description, image: 'cover' },
         { path: 'about', title: 'About', description: site.description, image: 'cover' },
@@ -51,6 +53,14 @@ function routeShells(): Plugin {
           .replace(/<meta property="og:site_name"/, `<meta property="og:url" content="${url}" />\n    <meta property="og:site_name"`)
         mkdirSync(join(dist, route.path), { recursive: true })
         writeFileSync(join(dist, route.path, 'index.html'), html)
+      }
+      // The homepage shell needs the same absolute image URL.
+      if (base) {
+        const home = template
+          .replace(/(<meta property="og:image" content=")[^"]*/, `$1${base}/og/cover.png`)
+          .replace(/(<meta name="twitter:image" content=")[^"]*/, `$1${base}/og/cover.png`)
+          .replace(/<meta property="og:site_name"/, `<meta property="og:url" content="${base}/" />\n    <meta property="og:site_name"`)
+        writeFileSync(join(dist, 'index.html'), home)
       }
     },
   }
