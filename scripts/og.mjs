@@ -27,6 +27,7 @@ const shots = [
   { file: 'arm', path: '/simulations/arm?seed=6404', warm: 9000 },
   { file: 'machine', path: '/simulations/machine?seed=1313', warm: 16500 },
   { file: 'cube', path: '/simulations/cube?seed=1414', warm: 9000 },
+  { file: 'engine', path: '/simulations/engine?seed=1515', warm: 9000 },
 ]
 
 const browser = await chromium.launch({

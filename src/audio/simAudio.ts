@@ -1118,6 +1118,53 @@ class CubeAudio implements SimulationAudioDriver {
   dispose(): void {}
 }
 
+class EngineAudio implements SimulationAudioDriver {
+  private gain: GainNode
+  private filter: BiquadFilterNode
+  private fundamental: OscillatorNode
+  private half: OscillatorNode
+
+  constructor(private ctx: AudioContext, dest: AudioNode) {
+    this.gain = ctx.createGain()
+    this.gain.gain.value = 0
+    this.filter = ctx.createBiquadFilter()
+    this.filter.type = 'lowpass'
+    this.filter.frequency.value = 300
+    this.fundamental = ctx.createOscillator()
+    this.fundamental.type = 'sawtooth'
+    this.half = ctx.createOscillator()
+    this.half.type = 'square'
+    this.fundamental.connect(this.filter)
+    this.half.connect(this.filter)
+    this.filter.connect(this.gain)
+    this.gain.connect(dest)
+    this.fundamental.start()
+    this.half.start()
+  }
+
+  update(stats: Record<string, number | string>): void {
+    // The note is the firing rate; the throttle opens it up and makes it louder.
+    const firing = parseFloat(String(stats.firing ?? '0')) || 0
+    const throttle = (parseFloat(String(stats.throttle ?? '0')) || 0) / 100
+    const now = this.ctx.currentTime
+    this.fundamental.frequency.setTargetAtTime(Math.max(firing, 1), now, 0.03)
+    this.half.frequency.setTargetAtTime(Math.max(firing / 2, 1), now, 0.03)
+    this.filter.frequency.setTargetAtTime(220 + firing * 3 + throttle * 1400, now, 0.05)
+    this.gain.gain.setTargetAtTime(firing > 2 ? 0.035 + throttle * 0.06 : 0, now, 0.05)
+  }
+
+  handleEvent(): void {}
+
+  dispose(): void {
+    this.fundamental.stop()
+    this.half.stop()
+    this.fundamental.disconnect()
+    this.half.disconnect()
+    this.filter.disconnect()
+    this.gain.disconnect()
+  }
+}
+
 export function createSimulationAudioDriver(simId: string): SimulationAudioDriver | null {
   const ctx = audioEngine.getContext()
   const dest = audioEngine.getMasterInput()
@@ -1152,6 +1199,8 @@ export function createSimulationAudioDriver(simId: string): SimulationAudioDrive
       return new MachineAudio(ctx, dest)
     case 'cube':
       return new CubeAudio(ctx, dest)
+    case 'engine':
+      return new EngineAudio(ctx, dest)
     default:
       return null
   }

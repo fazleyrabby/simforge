@@ -1,6 +1,16 @@
 # Changelog
 
-## Unreleased — 2026-10-06
+## Unreleased — 2026-10-13
+
+### Added
+
+- **Engine Cutaway (15):** an inline four-stroke petrol engine with the front of the block cut away, selectable as a single, twin, three, four or six. Each cylinder carries its own gas pressure: filling from the manifold on intake, compressing and expanding by the gas law, burning on a timed curve after the spark, and blowing down through the exhaust valve. That pressure on the piston, through the connecting-rod geometry, is what turns the crank against friction and a brake. Nothing about speed is scripted: idle is held by a governor on intake air, the engine stalls if the brake asks for more than it can make, fuel is cut at 7,000 rpm, and power falls away either side of about 22° of spark advance.
+  - Controls: throttle, brake load, cylinder count, spark advance, ignition, and a playback speed that slows what is shown without slowing the engine. `Starter` cranks it by hand; a stalled engine also retries after a pause.
+  - Shown: crank with counterweights, rods, pistons with rings, valves under a half-speed camshaft driven by a belt, spark flashes, a throttle plate that follows the control, an exhaust manifold that glows with power, and the gas in each cylinder coloured by its state. A screen plots cylinder 1's pressure against volume on a log scale.
+- A standalone engine model with 13 tests: piston travel and compression ratio, even firing, idle for every layout, response to throttle and load, torque matching the brake, best spark timing, firing against motored pressure, the rev limiter, stall and restart, coasting to a stop, smoothness by cylinder count, and repeatability.
+- An engine note that follows the firing rate and throttle, and a share image; the cover now shows fifteen simulations.
+
+## 2026-10-06
 
 ### Added
 
@@ -30,6 +40,14 @@
 ### Fixed
 
 - Share cards on X showed no picture: the image URL in the page tags was relative unless `SITE_URL` was set. The build now falls back to the Vercel production domain, and the homepage gets the absolute URL as well as the per-simulation pages.
+
+### Verified (Engine Cutaway)
+
+- Type check and production build pass; all 128 unit tests pass. In the browser the four-cylinder engine started, idled, and at 70% throttle against a 120 N·m brake settled at about 3,600 rpm and 51 kW with the pressure loop drawn on the screen.
+
+### Not verified (Engine Cutaway)
+
+- Sound was not listened to. Layouts other than the four, the stall message, the ignition switch and the playback control were exercised in the model or by reading the code, not watched in the browser. Frame cost on a phone was not measured. The numbers are plausible for a 2.0 L engine but the model is simplified: no knock, no valve timing effects on breathing, one shared pressure trace for display.
 
 ### Verified
 
